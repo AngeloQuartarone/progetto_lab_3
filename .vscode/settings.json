@@ -3,6 +3,6 @@
         "src"
     ],
     "java.project.referencedLibraries": [
-        "lib/Gson 2.10.1.jar"
+        "/Users/angeloquartarone/Universita/Laboratorio3/progetto/lib/gson.jar"
     ]
 }

@@ -1,5 +1,5 @@
 SRC = src
-LIB = lib/*.jar
+LIB = lib/gson.jar
 BIN = bin
 
 JFLAGS = -cp
