@@ -1,9 +1,9 @@
 package server;
 
 import java.io.*;
+import java.util.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import com.google.gson.stream.JsonReader;
 
 import java.util.Properties;
@@ -16,21 +16,40 @@ public class ServerMain {
     private static String port = "";
 
     public static void main(String[] args) throws Exception {
-        System.out.println("Current working directory: " + System.getProperty("user.dir"));
-
+        ServerSocket serverSocket = null;
+        Socket clientSocket = null;
         ServerMain server = new ServerMain();
         server.init("./src/server/serverParameter.properties");
         JsonParser x = new JsonParser(hotelsPath);
         ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = new ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>>();
-        hotels = x.parse();
-        x.printAll(hotels);
+        // hotels = x.parse();
+        // x.printAll(hotels);
+        try {
+            serverSocket = new ServerSocket(Integer.parseInt(port));
+
+            while (true) {
+                clientSocket = serverSocket.accept();
+                SessionManager connection = new SessionManager(clientSocket);
+                connection.run();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            serverSocket.close();
+            clientSocket.close();
+        } catch (IOException i) {
+            System.out.println(i);
+        }
 
     }
 
     void init(String configFile) {
         InputStream input = null;
         try {
-            input = new FileInputStream("./src/server/serverParameter.properties");
+            input = new FileInputStream(configFile);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
