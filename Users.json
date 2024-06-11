@@ -2,5 +2,25 @@
   {
     "username": "test",
     "password": "test"
+  },
+  {
+    "username": "ERROR",
+    "password": "ERROR"
+  },
+  {
+    "username": "REGISTER",
+    "password": "ERROR"
+  },
+  {
+    "username": "ERROR",
+    "password": "ERROR"
+  },
+  {
+    "username": "ERROR",
+    "password": "ERROR"
+  },
+  {
+    "username": "angelo",
+    "password": "angelo"
   }
 ]

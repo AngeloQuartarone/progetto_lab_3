@@ -24,17 +24,23 @@ public class User {
         return username;
     }
 
-    public boolean checkPassword(String password) {
+    private boolean checkPassword(String password) {
         return password.equals(this.password);
     }
 
-    public static void appendUser(User newUser) {
+    /**
+     * Append a new user to the list of users
+     * 
+     * @param newUser
+     */
+    public static void insertdUser(User newUser) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         List<User> users = new ArrayList<>();
 
         // Read the existing users from the file
         try (Reader reader = new FileReader(filePath)) {
-            Type userListType = new TypeToken<ArrayList<User>>(){}.getType();
+            Type userListType = new TypeToken<ArrayList<User>>() {
+            }.getType();
             users = gson.fromJson(reader, userListType);
         } catch (FileNotFoundException e) {
             System.out.println("File not found. A new file will be created.");
@@ -56,13 +62,19 @@ public class User {
         }
     }
 
-    public static boolean checkUser(User user) {
+    /**
+     * Check if the user is already in the list
+     * 
+     * @param user
+     * @return true if the user is already in the list, false otherwise
+     */
+    public static boolean checkUser(User userToCheck) {
         Gson gson = new Gson();
         List<User> users = new ArrayList<>();
 
         // Read the existing users from the file
         try (Reader reader = new FileReader(filePath)) {
-            Type userListType = new TypeToken<ArrayList<User>>(){}.getType();
+            Type userListType = new TypeToken<ArrayList<User>>() {}.getType();
             users = gson.fromJson(reader, userListType);
             if (users == null) {
                 users = new ArrayList<>();
@@ -75,12 +87,35 @@ public class User {
 
         // Check if the user is already in the list
         for (User u : users) {
-            if (u.username.equals(user.username)) {
+            if (u.username.equals(userToCheck.username) && u.checkPassword(userToCheck.password)) {
                 return true; // User already exists, do not append
             }
         }
         return false;
     }
 
+    public static boolean existUser(String userName) {
+        Gson gson = new Gson();
+        List<User> users = new ArrayList<>();
+
+        // Read the existing users from the file
+        try (Reader reader = new FileReader(filePath)) {
+            Type userListType = new TypeToken<ArrayList<User>>() {
+            }.getType();
+            users = gson.fromJson(reader, userListType);
+            if (users == null) {
+                users = new ArrayList<>();
+            }
+        } catch (FileNotFoundException e) {
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        for (User u : users) {
+            if (u.username.equals(userName)) {
+            }
+        }
+        return false;
+    }
 
 }

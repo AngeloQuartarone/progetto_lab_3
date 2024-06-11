@@ -77,8 +77,23 @@ public class HOTELIERCustomerClient {
             System.out.println(e);
             return;
         }
+        
+        while(!socket.isClosed() || socket.isConnected()){
+            String received = null;
+            String toSend = null;
+            received = comunication.receive();
+            System.out.println(received);
+            try {
+                toSend = keyboardInput.readLine();
+                comunication.send(toSend);
+            } catch (IOException e) {
+                System.out.println(e);
+                return;
+            }
 
-        comunication.send("HELLO");
 
+        }
     }
+
+    
 }
