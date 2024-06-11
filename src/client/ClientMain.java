@@ -15,40 +15,10 @@ public class ClientMain {
 	// private static DataOutputStream out = null;
 
 	public static void main(String args[]) {
-		ClientMain client = new ClientMain();
-		client.init("./src/client/clientParameter.properties");
-		Socket socket = null;
+		//ClientMain client = new ClientMain();
+		//client.init("./src/client/clientParameter.properties");
 		// establish a connection
-		try {
-			socket = new Socket(ipAddr, Integer.parseInt(port));
-			System.out.println("Connected");
-			while (true) {
-				// takes input from terminal
-				BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
-
-				// sends output to the socket
-				DataOutputStream out = new DataOutputStream(socket.getOutputStream());
-
-				// takes input from the server
-				DataInputStream in = new DataInputStream(socket.getInputStream());
-
-				String line = "";
-				while (!line.equals("Over")) {
-					line = input.readLine();
-					out.writeUTF(line);
-					line = in.readUTF();
-					System.out.println(line);
-				}
-				out.writeUTF("Over");
-			}
-
-		} catch (UnknownHostException u) {
-			System.out.println(u);
-			return;
-		} catch (IOException i) {
-			System.out.println(i);
-			return;
-		}
+		
 
 		// close the connection
 		/*
@@ -60,29 +30,10 @@ public class ClientMain {
 		 * System.out.println(i);
 		 * }
 		 */
+		HOTELIERCustomerClient client = new HOTELIERCustomerClient();
+		client.runCLI();
+		
 	}
 
-	void init(String configFile) {
-		InputStream input = null;
-		try {
-			input = new FileInputStream(configFile);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		Properties prop = new Properties();
-
-		try {
-			prop.load(input);
-
-			// Leggi le proprietà
-			ipAddr = prop.getProperty("SERVER_IP");
-			port = prop.getProperty("SERVER_PORT");
-			System.out.println(ipAddr);
-			System.out.println(port);
-			input.close();
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+	
 }
