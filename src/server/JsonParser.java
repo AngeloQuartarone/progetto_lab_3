@@ -95,6 +95,10 @@ public class JsonParser {
         return hotels;
     }
 
+
+
+    
+
     public void printAll(ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels) {
         for (Map.Entry<String, LinkedBlockingQueue<Hotel>> entry : hotels.entrySet()) {
             System.out.println("City: " + entry.getKey());

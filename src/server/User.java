@@ -33,7 +33,7 @@ public class User {
      * 
      * @param newUser
      */
-    public static void insertdUser(User newUser) {
+    public static void insertUser(User newUser) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         List<User> users = new ArrayList<>();
 

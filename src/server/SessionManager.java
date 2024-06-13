@@ -1,6 +1,8 @@
 package server;
 
 import java.net.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.io.*;
 
 enum State {
@@ -16,13 +18,15 @@ enum LoggedState {
 }
 
 public class SessionManager {
-    private Socket socket = null;
+    private static Socket socket = null;
+    private static String hotelsPath = null;
     private static ComunicationManager comunication;
     private static State actualState = State.NO_LOGGED;
     // File userFile = new File("./src/server/users.json");
 
-    public SessionManager(Socket s) {
-        this.socket = s;
+    public SessionManager(Socket s, String hotelsP) {
+        socket = s;
+        hotelsPath = hotelsP;
     }
 
     public void run() {
@@ -42,18 +46,24 @@ public class SessionManager {
             comunication = new ComunicationManager(in, out);
 
             String received = null;
-            
-            while (!socket.isClosed() && socket.isConnected()) {
+
+            while (!socket.isClosed() /*&& socket.isConnected()*/ ) {
                 if (actualState == State.NO_LOGGED) {
-                    comunication.send("Benvenuto!\n1) Register\n2) Login\n3) Search hotel\n4)Search hotel by city\n5)Exit\n");
+                    comunication.send(
+                            "Benvenuto!\n1) Register\n2) Login\n3) Search hotel\n4)Search hotel by city\n5)Exit\n");
+                } else if (actualState == State.LOGGED) {
+                    comunication.send(
+                            "Benvenuto!\n1) Search hotel\n2)Search hotel by city\n3)Logout\n4)Review\n5)Badge\n6)Exit\n");
                 } else {
-                    comunication.send("Benvenuto!\n1) Search hotel\n2)Search hotel by city\n3)Logout\n4)Review\n5)Badge\n6)Exit\n");
+                    System.out.println("Error");
+                    break;
                 }
+
                 received = comunication.receive();
                 if (received == null) {
-                    // Se received è null, potrebbe significare che il client ha chiuso la connessione
-                    System.out.println("Connection closed by client.");
-                    break; // Esce dal loop
+                    break;
+                } else {
+                    SessionManager.handleMessage(received);
                 }
                 System.out.println(received);
             }
@@ -66,8 +76,6 @@ public class SessionManager {
                 }
             }
 
-
-
         } catch (IOException e) {
             e.printStackTrace();
             return;
@@ -75,14 +83,72 @@ public class SessionManager {
 
     }
 
+    private static void handleMessage(String message) {
+        if (actualState == State.NO_LOGGED) {
+            switch (message) {
+                case "1":
+                    registerUser(comunication);
+                    break;
+                case "2":
+                    loginUser(comunication);
+                    break;
+                case "3":
+                    // searchHotel(comunication);
+                    break;
+                case "4":
+                    // searchHotelByCity(comunication);
+                    searchHotelByCity(comunication);
+                    break;
+                case "5":
+                    exit(comunication);
+                    break;
+                default:
+                    comunication.send("Invalid command");
+                    break;
+            }
+        } else if (actualState == State.LOGGED) {
+            switch (message) {
+                case "1":
+                    // searchHotel(comunication);
+                    break;
+                case "2":
+                    // searchHotelByCity(comunication);
+                    searchHotelByCity(comunication);
+                    break;
+                case "3":
+                    // logout(comunication);
+                    break;
+                case "4":
+                    // review(comunication);
+                    break;
+                case "5":
+                    // badge(comunication);
+                    break;
+                case "6":
+                    // exit(comunication);
+                    exit(comunication);
+                    break;
+                default:
+                    comunication.send("Invalid command");
+                    break;
+            }
+        }
+    }
+
     private static void registerUser(ComunicationManager comunication) {
         comunication.send("Insert username");
         String username = comunication.receive();
+        if (username == null) {
+            return;
+        }
         comunication.send("Insert password");
         String password = comunication.receive();
+        if (password == null) {
+            return;
+        }
         User user = new User(username, password);
         if (!User.checkUser(user)) {
-            User.insertdUser(user);
+            User.insertUser(user);
             comunication.send("User added");
         } else {
             comunication.send("User already exists");
@@ -92,18 +158,44 @@ public class SessionManager {
     private static void loginUser(ComunicationManager comunication) {
         comunication.send("Insert username");
         String username = comunication.receive();
+        if (username == null) {
+            return;
+        }
         comunication.send("Insert password");
         String password = comunication.receive();
+        if (password == null) {
+            return;
+        }
         User user = new User(username, password);
         if (User.checkUser(user)) {
             comunication.send("User logged in");
+            actualState = State.LOGGED;
         } else {
-            comunication.send("User not found");
+            comunication.send("User not found, please retry o register");
         }
     }
 
-    
-    
+    private static void exit(ComunicationManager comunication) {
+        try {
+            comunication.send("Goodbye!");
+            comunication.send("EXIT");
+            socket.close();
+        } catch (IOException e) {
+            System.err.println("Error closing socket: " + e.getMessage());
+        }
+    }
 
-    // private void
+    public static void searchHotelByCity(ComunicationManager comunication) {
+        comunication.send("Insert city");
+        String hotelName = comunication.receive();
+        if (hotelName == null) {
+            return;
+        }
+        
+        SearchEngine searchEngine = new SearchEngine(hotelsPath);
+
+        ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = searchEngine.searchByCity(hotelName);
+        String toSend = searchEngine.formatHotels(hotels);
+        comunication.send(toSend);
+    }
 }

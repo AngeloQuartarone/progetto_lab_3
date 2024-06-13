@@ -32,6 +32,7 @@ public class ClientMain {
 		 */
 		HOTELIERCustomerClient client = new HOTELIERCustomerClient();
 		client.runCLI();
+		return;
 		
 	}
 

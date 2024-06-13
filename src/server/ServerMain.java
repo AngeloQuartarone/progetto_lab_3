@@ -14,22 +14,22 @@ public class ServerMain {
     private static String hotelsPath = "";
     private static String ipAddr = "";
     private static String port = "";
+    private static ServerSocket serverSocket = null;
+    private static Socket clientSocket = null;
 
     public static void main(String[] args) throws Exception {
-        ServerSocket serverSocket = null;
-        Socket clientSocket = null;
         ServerMain server = new ServerMain();
         server.init("./src/server/serverParameter.properties");
-        JsonParser x = new JsonParser(hotelsPath);
-        ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = new ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>>();
+        //JsonParser x = new JsonParser(hotelsPath);
+        //ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = new ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>>();
         // hotels = x.parse();
         // x.printAll(hotels);
         try {
-            serverSocket = new ServerSocket(Integer.parseInt(port));
+            //serverSocket = new ServerSocket(Integer.parseInt(port));
 
             while (true) {
                 clientSocket = serverSocket.accept();
-                SessionManager connection = new SessionManager(clientSocket);
+                SessionManager connection = new SessionManager(clientSocket, hotelsPath);
                 connection.run();
             }
 
@@ -69,6 +69,14 @@ public class ServerMain {
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+
+        try {
+            serverSocket = new ServerSocket(Integer.parseInt(port));
+            System.out.println("Server started");
+        } catch (IOException e) {
+            System.out.println(e);
+            return;
         }
     }
 

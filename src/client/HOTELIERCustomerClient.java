@@ -78,14 +78,32 @@ public class HOTELIERCustomerClient {
             return;
         }
         
-        while(!socket.isClosed() || socket.isConnected()){
+        while(!socket.isClosed()){
             String received = null;
             String toSend = null;
             received = comunication.receive();
+            if (received == null) {
+                System.out.println("An error occurred. Exiting...");
+                break;
+            }
+            if(received.equals("EXIT")){
+                try {
+                    socket.close();
+                    break;
+                } catch (IOException e) {
+                    System.out.println(e);
+                }
+                
+            }
             System.out.println(received);
             try {
-                toSend = keyboardInput.readLine();
-                comunication.send(toSend);
+                if((toSend = keyboardInput.readLine()) != null){
+                    comunication.send(toSend);
+                } else {
+                    continue;
+                }
+                
+                //comunication.send(toSend);
             } catch (IOException e) {
                 System.out.println(e);
                 return;
@@ -93,6 +111,7 @@ public class HOTELIERCustomerClient {
 
 
         }
+        return;
     }
 
     
