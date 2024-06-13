@@ -11,8 +11,6 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.Properties;
 
-import server.CommunicationManager;
-
 public class HOTELIERCustomerClient {
     private String ipAddr = "";
     private String port = "";
@@ -78,16 +76,14 @@ public class HOTELIERCustomerClient {
             return;
         }
 
-        do {
-            received = communication.receive();
-            if (received == null) {
-                System.out.println("[RECEIVED NULL]An error occurred. Exiting...");
-                continue;
-            } else {
-                try {
+        try {
+            do {
+                received = communication.receive();
+                if (received == null) {
+                    System.out.println("[RECEIVED NULL] An error occurred. Exiting...");
+                    break; // Uscire dal ciclo se il server si disconnette inattesamente
+                } else {
                     if (!received.equals("PROMPT")) {
-                        // System.out.println("\033[H\033[2J");
-                        // System.out.flush();
                         System.out.println(received);
                     } else {
                         System.out.print("-> ");
@@ -96,13 +92,21 @@ public class HOTELIERCustomerClient {
                         }
                         communication.send(toSend);
                     }
-
-                } catch (IOException e) {
-                    System.out.println(e);
-                    return;
                 }
+            } while (!received.equals("EXIT"));
+        } catch (IOException e) {
+            System.out.println(e);
+        } finally {
+            // Chiudi tutte le risorse nel blocco finally per assicurarti che vengano sempre chiuse correttamente
+            try {
+                if (keyboardInput != null) keyboardInput.close();
+                if (in != null) in.close();
+                if (out != null) out.close();
+                if (socket != null) socket.close();
+            } catch (IOException e) {
+                System.out.println("Error closing resources: " + e);
             }
-        } while (!received.equals("EXIT"));
+        }
     }
 
 }

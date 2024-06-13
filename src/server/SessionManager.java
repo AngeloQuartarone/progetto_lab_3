@@ -26,10 +26,12 @@ public class SessionManager {
 
     public void run() {
         searchEngine = new SearchEngine(hotelsPath);
+        DataInputStream in = null;
+        DataOutputStream out = null;
 
         try {
-            DataInputStream in = new DataInputStream(socket.getInputStream());
-            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            in = new DataInputStream(socket.getInputStream());
+            out = new DataOutputStream(socket.getOutputStream());
             communication = new CommunicationManager(in, out);
 
             while (!socket.isClosed()) {
@@ -38,16 +40,30 @@ public class SessionManager {
                     break;
                 }
             }
-            if (!socket.isClosed()) {
-                try {
-                    socket.close();
-                } catch (IOException e) {
-                    System.err.println("Error closing socket: " + e.getMessage());
-                }
-            }
+            /*
+             * if (!socket.isClosed()) {
+             * try {
+             * socket.close();
+             * } catch (IOException e) {
+             * System.err.println("Error closing socket: " + e.getMessage());
+             * }
+             * }
+             */
 
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+
+            try {
+                if (socket != null)
+                    socket.close();
+                if (in != null)
+                    in.close();
+                if (out != null)
+                    out.close();
+            } catch (IOException e) {
+                System.out.println("Error closing resources: " + e);
+            }
         }
 
     }
