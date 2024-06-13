@@ -2,7 +2,7 @@ package server;
 
 import java.io.*;
 
-public class ComunicationManager {
+public class CommunicationManager {
     private DataInputStream in;
     private DataOutputStream out;
 
@@ -12,7 +12,7 @@ public class ComunicationManager {
      * @param i DataInputStream
      * @param o DataOutputStream
      */
-    public ComunicationManager(DataInputStream i, DataOutputStream o) {
+    public CommunicationManager(DataInputStream i, DataOutputStream o) {
         this.in = i;
         this.out = o;
     }

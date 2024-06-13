@@ -9,10 +9,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.Socket;
-import java.nio.Buffer;
 import java.util.Properties;
 
-import server.ComunicationManager;
+import server.CommunicationManager;
 
 public class HOTELIERCustomerClient {
     private String ipAddr = "";
@@ -36,7 +35,6 @@ public class HOTELIERCustomerClient {
         try {
             prop.load(fileInput);
 
-            // Leggi le proprietà
             ipAddr = prop.getProperty("SERVER_IP");
             port = prop.getProperty("SERVER_PORT");
             System.out.println(ipAddr);
@@ -61,6 +59,8 @@ public class HOTELIERCustomerClient {
         BufferedReader keyboardInput = null;
         DataInputStream in = null;
         DataOutputStream out = null;
+        String received = null;
+        String toSend = null;
         try {
             keyboardInput = new BufferedReader(new InputStreamReader(System.in));
             in = new DataInputStream(socket.getInputStream());
@@ -70,49 +70,39 @@ public class HOTELIERCustomerClient {
             return;
         }
 
-        ComunicationManager comunication = null;
+        CommunicationManager communication = null;
         try {
-            comunication = new ComunicationManager(in, out);
+            communication = new CommunicationManager(in, out);
         } catch (Exception e) {
             System.out.println(e);
             return;
         }
-        
-        while(!socket.isClosed()){
-            String received = null;
-            String toSend = null;
-            received = comunication.receive();
+
+        do {
+            received = communication.receive();
             if (received == null) {
-                System.out.println("An error occurred. Exiting...");
-                break;
-            }
-            if(received.equals("EXIT")){
+                System.out.println("[RECEIVED NULL]An error occurred. Exiting...");
+                continue;
+            } else {
                 try {
-                    socket.close();
-                    break;
+                    if (!received.equals("PROMPT")) {
+                        // System.out.println("\033[H\033[2J");
+                        // System.out.flush();
+                        System.out.println(received);
+                    } else {
+                        System.out.print("-> ");
+                        while ((toSend = keyboardInput.readLine()) == null || toSend.trim().isEmpty()) {
+                            System.out.println("No valid input received. Please try again.");
+                        }
+                        communication.send(toSend);
+                    }
+
                 } catch (IOException e) {
                     System.out.println(e);
+                    return;
                 }
-                
             }
-            System.out.println(received);
-            try {
-                if((toSend = keyboardInput.readLine()) != null){
-                    comunication.send(toSend);
-                } else {
-                    continue;
-                }
-                
-                //comunication.send(toSend);
-            } catch (IOException e) {
-                System.out.println(e);
-                return;
-            }
-
-
-        }
-        return;
+        } while (!received.equals("EXIT"));
     }
 
-    
 }
