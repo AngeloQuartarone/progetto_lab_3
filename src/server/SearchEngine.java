@@ -8,14 +8,27 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * SearchEngine class
+ */
 public class SearchEngine {
     private String filePath;
 
+    /**
+     * Constructor
+     * 
+     * @param file the path of the file to parse
+     */
     public SearchEngine(String file) {
         this.filePath = file;
 
     }
 
+    /**
+     * Parse the file and return a ConcurrentHashMap with the hotels
+     * 
+     * @return a ConcurrentHashMap with the hotels
+     */
     public ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> searchByCity(String cityFilter) {
         ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = new ConcurrentHashMap<>();
         Double c = 0.0, p = 0.0, s = 0.0, q = 0.0;
@@ -105,6 +118,14 @@ public class SearchEngine {
         return hotels;
     }
 
+    /**
+     * Search for a hotel by name
+     * 
+     * @param cityFilter the city to search in
+     * @param hotelName the name of the hotel to search
+     * @param hotels the ConcurrentHashMap with the hotels
+     * @return the hotel if found, null otherwise
+     */
     public Hotel searchByHotelName(String cityFilter, String hotelName, ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels) {
         Hotel resultHotel = null;
         System.out.println("City: " + cityFilter);
@@ -127,38 +148,12 @@ public class SearchEngine {
         return resultHotel;
     }
 
-    /*private void readHotelsFromFile() {
-        JsonReader reader = null;
-        try {
-            reader = new JsonReader(new FileReader(filePath));
-            reader.beginArray();
-            while (reader.hasNext()) {
-                Hotel hotel = new Hotel();
-                reader.beginObject();
-                while (reader.hasNext()) {
-                    // Parsing dell'hotel (come prima)
-                }
-                reader.endObject();
-
-                // Aggiungi l'hotel alla ConcurrentHashMap
-                hotels.computeIfAbsent(hotel.city, k -> new LinkedBlockingQueue<>()).add(hotel);
-            }
-            reader.endArray();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                if (reader != null) {
-                    reader.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }*/
-
+    /**
+     * Format the hotels in a readable way
+     * 
+     * @param hotels the ConcurrentHashMap with the hotels
+     * @return a formatted string with the hotels
+     */
     public String formatHotels(ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels) {
         StringBuilder sb = new StringBuilder();
         sb.append("\n\n------------------------------\n");
@@ -189,6 +184,12 @@ public class SearchEngine {
         return sb.toString();
     }
 
+    /**
+     * Format a single hotel in a readable way
+     * 
+     * @param hotel the hotel to format
+     * @return a formatted string with the hotel
+     */
     public String formatSingleHotel(Hotel hotel) {
         StringBuilder sb = new StringBuilder();
         sb.append("\n\n------------------------------\n");

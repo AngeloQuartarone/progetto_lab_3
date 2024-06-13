@@ -2,6 +2,9 @@ package client;
 
 import java.io.*;
 
+/**
+ * CommunicationManager class
+ */
 public class CommunicationManager {
     private DataInputStream in;
     private DataOutputStream out;

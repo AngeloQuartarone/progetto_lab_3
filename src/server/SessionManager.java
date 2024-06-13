@@ -9,6 +9,9 @@ enum State {
     NO_LOGGED, LOGGED, SEARCH, SEARCH_CITY, REGISTER, LOGIN, LOGOUT, REVIEW, BADGE, EXIT
 }
 
+/**
+ * SessionManager class
+ */
 public class SessionManager {
     private static Socket socket = null;
     private static String hotelsPath = null;
@@ -19,11 +22,20 @@ public class SessionManager {
     private static ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = null;
     private static SearchEngine searchEngine = null;
 
+    /**
+     * Constructor
+     * 
+     * @param s the socket
+     * @param hotelsP the path of the hotels file
+     */
     public SessionManager(Socket s, String hotelsP) {
         socket = s;
         hotelsPath = hotelsP;
     }
 
+    /**
+     * Run the session
+     */
     public void run() {
         searchEngine = new SearchEngine(hotelsPath);
         DataInputStream in = null;
@@ -68,6 +80,11 @@ public class SessionManager {
 
     }
 
+    /**
+     * Handle the message
+     * 
+     * @return true if the message is handled, false otherwise
+     */
     private static boolean handleMessage() {
         String message = null;
         if (actualState == State.NO_LOGGED) {
@@ -145,6 +162,10 @@ public class SessionManager {
 
     }
 
+    /**
+     * Register a user
+     * @param communication
+     */
     private static void registerUser(CommunicationManager communication) {
         communication.send("Insert username");
         communication.send("PROMPT");
@@ -167,6 +188,10 @@ public class SessionManager {
         }
     }
 
+    /**
+     * Login a user
+     * @param communication
+     */
     private static void loginUser(CommunicationManager communication) {
         communication.send("Insert username");
         communication.send("PROMPT");
@@ -189,6 +214,10 @@ public class SessionManager {
         }
     }
 
+    /**
+     * Search a hotel by city
+     * @param communication
+     */
     public static void searchHotelByCity(CommunicationManager communication) {
         communication.send("Insert city");
         communication.send("PROMPT");
@@ -204,6 +233,10 @@ public class SessionManager {
         communication.send(toSend);
     }
 
+    /**
+     * Search a hotel
+     * @param communication
+     */
     public static void searchHotel(CommunicationManager communication) {
         communication.send("Insert hotel city");
         communication.send("PROMPT");
@@ -217,21 +250,16 @@ public class SessionManager {
         if (hotelName == null) {
             return;
         }
-
-        // hotels = searchEngine.
-        // SearchEngine searchEngine = new SearchEngine(hotelsPath);
-        // hotels = searchEngine.searchByCity(hotelName);
-        // String x = searchEngine.formatHotels(hotels);
-        // System.out.println("iwehwic: "+x);
-
         hotels = searchEngine.searchByCity(hotelCity);
         Hotel hotel = searchEngine.searchByHotelName(hotelCity, hotelName, hotels);
-        // Hotel hotel = searchEngine.searchByHotelName(hotelCity, hotelName);
-
         String toSend = searchEngine.formatSingleHotel(hotel);
         communication.send(toSend);
     }
 
+    /**
+     * Exit the session
+     * @param communication
+     */
     private static void exit(CommunicationManager communication) {
         try {
             communication.send("Goodbye!");

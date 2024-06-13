@@ -11,15 +11,26 @@ import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.Properties;
 
+/**
+ * HOTELIERCustomerClient class
+ */
 public class HOTELIERCustomerClient {
     private String ipAddr = "";
     private String port = "";
     private Socket socket = null;
 
+    /**
+     * Constructor
+     */
     public HOTELIERCustomerClient() {
         init("./src/client/clientParameter.properties");
     }
 
+    /**
+     * Initialize the client
+     * 
+     * @param configFile the path of the configuration file
+     */
     private void init(String configFile) {
         InputStream fileInput = null;
 
@@ -53,6 +64,9 @@ public class HOTELIERCustomerClient {
         }
     }
 
+    /**
+     * Run the CLI for the client
+     */
     public void runCLI() {
         BufferedReader keyboardInput = null;
         DataInputStream in = null;

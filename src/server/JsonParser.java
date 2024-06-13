@@ -7,13 +7,26 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
+/**
+ * JsonParser class
+ */
 public class JsonParser {
     private String filePath;
 
+    /**
+     * Constructor
+     * 
+     * @param file the path of the file to parse
+     */
     public JsonParser(String file) {
         this.filePath = file;
     }
 
+    /**
+     * Parse the file and return a ConcurrentHashMap with the hotels
+     * 
+     * @return a ConcurrentHashMap with the hotels
+     */
     public ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> parse() {
         ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = new ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>>();
         Double c = 0.0, p = 0.0, s = 0.0, q = 0.0;
@@ -65,7 +78,6 @@ public class JsonParser {
                         reader.endObject();
                         hotel.ratings = new Ratings(c, p, s, q);
                     }
-                    // reader.endArray();
                 }
                 reader.endObject();
                 String actualName = hotel.city;
@@ -76,8 +88,6 @@ public class JsonParser {
                     x.add(hotel);
                     hotels.put(actualName, x);
                 }
-
-                // aggiungere l'hotel alla lista se c'è la lista, se no creala e aggiungi.
             } reader.endArray();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -95,10 +105,11 @@ public class JsonParser {
         return hotels;
     }
 
-
-
-    
-
+    /**
+     * Print all the hotels
+     * 
+     * @param hotels the ConcurrentHashMap with the hotels
+     */
     public void printAll(ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels) {
         for (Map.Entry<String, LinkedBlockingQueue<Hotel>> entry : hotels.entrySet()) {
             System.out.println("City: " + entry.getKey());

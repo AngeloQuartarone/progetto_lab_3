@@ -13,20 +13,40 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * User class
+ */
 public class User {
     public String username;
     public String password;
     private static final String filePath = "./Users.json";
 
+    /**
+     * Constructor
+     * 
+     * @param username
+     * @param password
+     */
     public User(String username, String password) {
         this.username = username;
         this.password = password;
     }
 
+    /**
+     * Get the username
+     * 
+     * @return the username
+     */
     public String getUsername() {
         return username;
     }
 
+    /**
+     * Check if the password is correct
+     * 
+     * @param password
+     * @return true if the password is correct, false otherwise
+     */
     private boolean checkPassword(String password) {
         return password.equals(this.password);
     }
@@ -40,7 +60,6 @@ public class User {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         List<User> users = new ArrayList<>();
 
-        // Read the existing users from the file
         try (Reader reader = new FileReader(filePath)) {
             Type userListType = new TypeToken<ArrayList<User>>() {
             }.getType();
@@ -51,13 +70,11 @@ public class User {
             e.printStackTrace();
         }
 
-        // Add the new user to the list
         if (users == null) {
             users = new ArrayList<>();
         }
         users.add(newUser);
 
-        // Write the updated list of users back to the file
         try (Writer writer = new FileWriter(filePath)) {
             gson.toJson(users, writer);
         } catch (IOException e) {
@@ -97,6 +114,12 @@ public class User {
         return false;
     }
 
+    /**
+     * Check if the user exists
+     * 
+     * @param userName
+     * @return true if the user exists, false otherwise
+     */
     public static boolean existUser(String userName) {
         Gson gson = new Gson();
         List<User> users = new ArrayList<>();

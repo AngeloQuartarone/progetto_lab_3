@@ -2,6 +2,9 @@ package server;
 
 import java.util.ArrayList;
 
+/**
+ * Hotel class
+ */
 public class Hotel {
     int id;
     String name;

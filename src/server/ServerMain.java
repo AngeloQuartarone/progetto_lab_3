@@ -8,6 +8,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
 
+/**
+ * ServerMain class
+ */
 public class ServerMain {
     private static String hotelsPath = "";
     private static String ipAddr = "";
@@ -15,6 +18,12 @@ public class ServerMain {
     private static ServerSocket serverSocket = null;
     private static Socket clientSocket = null;
 
+    /**
+     * Main method
+     * 
+     * @param args
+     * @throws Exception
+     */
     public static void main(String[] args) throws Exception {
         ServerMain server = new ServerMain();
         server.init("./src/server/serverParameter.properties");
@@ -44,6 +53,11 @@ public class ServerMain {
 
     }
 
+    /**
+     * Initialize the server
+     * 
+     * @param configFile the path of the configuration file
+     */
     void init(String configFile) {
         InputStream input = null;
         try {
