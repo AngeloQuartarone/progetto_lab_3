@@ -14,7 +14,10 @@ public class SessionManager {
     private static String hotelsPath = null;
     private static CommunicationManager communication;
     private static State actualState = State.NO_LOGGED;
+    // private SearchEngine searchEngine = null;
     // File userFile = new File("./src/server/users.json");
+    private static ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = null;
+    private static SearchEngine searchEngine = null;
 
     public SessionManager(Socket s, String hotelsP) {
         socket = s;
@@ -22,15 +25,18 @@ public class SessionManager {
     }
 
     public void run() {
+        searchEngine = new SearchEngine(hotelsPath);
 
         try {
             DataInputStream in = new DataInputStream(socket.getInputStream());
             DataOutputStream out = new DataOutputStream(socket.getOutputStream());
             communication = new CommunicationManager(in, out);
 
-
             while (!socket.isClosed()) {
-                handleMessage();
+
+                if (!handleMessage()) {
+                    break;
+                }
             }
             if (!socket.isClosed()) {
                 try {
@@ -42,18 +48,25 @@ public class SessionManager {
 
         } catch (IOException e) {
             e.printStackTrace();
-            return;
         }
 
     }
 
-    private static void handleMessage() {
+    private static boolean handleMessage() {
         String message = null;
         if (actualState == State.NO_LOGGED) {
-            communication
-                    .send("Benvenuto!\n\n1) Register\n2) Login\n3) Search hotel\n4) Search hotel by city\n5) Exit");
-            communication.send("PROMPT");
-            message = communication.receive();
+            try {
+                communication
+                        .send("Benvenuto!\n\n1) Register\n2) Login\n3) Search hotel\n4) Search hotel by city\n5) Exit");
+                communication.send("PROMPT");
+                message = communication.receive();
+            } catch (Exception e) {
+                return false;
+            }
+
+            if (message == null) {
+                return false;
+            }
             switch (message) {
                 case "1":
                     // actualState = State.REGISTER;
@@ -62,10 +75,11 @@ public class SessionManager {
                 case "2":
                     // actualState = State.LOGIN;
                     loginUser(communication);
-                    actualState = State.LOGGED;
+                    // actualState = State.LOGGED;
                     break;
                 case "3":
                     // searchHotel(communication);
+                    searchHotel(communication);
                     break;
                 case "4":
                     // searchHotelByCity(communication);
@@ -86,6 +100,7 @@ public class SessionManager {
             switch (message) {
                 case "1":
                     // searchHotel(communication);
+                    searchHotel(communication);
                     break;
                 case "2":
                     // searchHotelByCity(communication);
@@ -93,6 +108,7 @@ public class SessionManager {
                     break;
                 case "3":
                     // logout(communication);
+                    actualState = State.NO_LOGGED;
                     break;
                 case "4":
                     // review(communication);
@@ -109,6 +125,7 @@ public class SessionManager {
                     break;
             }
         }
+        return true;
 
     }
 
@@ -156,16 +173,6 @@ public class SessionManager {
         }
     }
 
-    private static void exit(CommunicationManager communication) {
-        try {
-            communication.send("Goodbye!");
-            communication.send("EXIT");
-            socket.close();
-        } catch (IOException e) {
-            System.err.println("Error closing socket: " + e.getMessage());
-        }
-    }
-
     public static void searchHotelByCity(CommunicationManager communication) {
         communication.send("Insert city");
         communication.send("PROMPT");
@@ -174,10 +181,48 @@ public class SessionManager {
             return;
         }
 
-        SearchEngine searchEngine = new SearchEngine(hotelsPath);
-
-        ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = searchEngine.searchByCity(hotelName);
+        hotels = searchEngine.searchByCity(hotelName);
+        // ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels =
+        // searchEngine.searchByCity(hotelName);
         String toSend = searchEngine.formatHotels(hotels);
         communication.send(toSend);
+    }
+
+    public static void searchHotel(CommunicationManager communication) {
+        communication.send("Insert hotel city");
+        communication.send("PROMPT");
+        String hotelCity = communication.receive();
+        if (hotelCity == null) {
+            return;
+        }
+        communication.send("Insert hotel name");
+        communication.send("PROMPT");
+        String hotelName = communication.receive();
+        if (hotelName == null) {
+            return;
+        }
+
+        // hotels = searchEngine.
+        // SearchEngine searchEngine = new SearchEngine(hotelsPath);
+        // hotels = searchEngine.searchByCity(hotelName);
+        // String x = searchEngine.formatHotels(hotels);
+        // System.out.println("iwehwic: "+x);
+
+        hotels = searchEngine.searchByCity(hotelCity);
+        Hotel hotel = searchEngine.searchByHotelName(hotelCity, hotelName, hotels);
+        // Hotel hotel = searchEngine.searchByHotelName(hotelCity, hotelName);
+
+        String toSend = searchEngine.formatSingleHotel(hotel);
+        communication.send(toSend);
+    }
+
+    private static void exit(CommunicationManager communication) {
+        try {
+            communication.send("Goodbye!");
+            communication.send("EXIT");
+            socket.close();
+        } catch (IOException e) {
+            System.err.println("Error closing socket: " + e.getMessage());
+        }
     }
 }
