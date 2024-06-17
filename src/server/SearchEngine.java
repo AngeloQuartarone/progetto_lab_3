@@ -4,6 +4,7 @@ import com.google.gson.stream.JsonReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -31,6 +32,9 @@ public class SearchEngine {
      */
     synchronized public void updateHotelListByCity(String cityFilter, ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> existingHotels) {
         Double c = 0.0, p = 0.0, s = 0.0, q = 0.0;
+        int id = 0, rate = 0;
+        String name = "", description = "", city = "", phone = "";
+        ArrayList<String> services = new ArrayList<>();
 
         JsonReader reader = null;
         try {
@@ -39,35 +43,35 @@ public class SearchEngine {
 
             reader.beginArray();
             while (reader.hasNext()) {
-                Hotel hotel = new Hotel();
                 reader.beginObject();
                 while (reader.hasNext()) {
                     String key = reader.nextName();
                     switch (key.toLowerCase()) {
                         case "id":
-                            hotel.id = reader.nextInt();
+                            id = reader.nextInt();
                             break;
                         case "name":
-                            hotel.name = reader.nextString().toLowerCase();
+                            name = reader.nextString().toLowerCase();
                             break;
                         case "description":
-                            hotel.description = reader.nextString().toLowerCase();
+                            description = reader.nextString().toLowerCase();
                             break;
                         case "city":
-                            hotel.city = reader.nextString().toLowerCase();
+                            city = reader.nextString().toLowerCase();
                             break;
                         case "phone":
-                            hotel.phone = reader.nextString().toLowerCase();
+                            phone = reader.nextString().toLowerCase();
                             break;
                         case "services":
+                            services.clear(); // Clear previous hotel services
                             reader.beginArray();
                             while (reader.hasNext()) {
-                                hotel.services.add(reader.nextString().toLowerCase());
+                                services.add(reader.nextString().toLowerCase());
                             }
                             reader.endArray();
                             break;
                         case "rate":
-                            hotel.rate = reader.nextInt();
+                            rate = reader.nextInt();
                             break;
                         case "ratings":
                             reader.beginObject();
@@ -89,11 +93,13 @@ public class SearchEngine {
                                 }
                             }
                             reader.endObject();
-                            hotel.ratings = new Ratings(c, p, s, q);
                             break;
                     }
                 }
                 reader.endObject();
+
+                // Create a new Hotel instance with the new constructor
+                Hotel hotel = new Hotel(id, name, description, city, phone, rate, c, p, s, q);
 
                 // Filtra per città e aggiunge alla mappa esistente
                 if (hotel.city.equalsIgnoreCase(cityFilter)) {
@@ -247,6 +253,8 @@ public class SearchEngine {
         }
         return sb.toString();
     }
+
+    
 
 
 

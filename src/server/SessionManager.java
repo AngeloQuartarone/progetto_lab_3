@@ -16,6 +16,7 @@ public class SessionManager implements Runnable {
     private State actualState = State.NO_LOGGED;
     private ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = new ConcurrentHashMap<>();
     private SearchEngine searchEngine = null;
+    private User actUser = null;
 
     public SessionManager(Socket s, String hotelsP) {
         this.socket = s;
@@ -111,6 +112,9 @@ public class SessionManager implements Runnable {
                     break;
                 case "4":
                     // review(communication);
+                    addReview(communication);
+
+                    actUser.addReviewCount();
                     break;
                 case "5":
                     // badge(communication);
@@ -141,7 +145,7 @@ public class SessionManager implements Runnable {
             return;
         }
 
-        if(User.checkUserName(username)) {
+        if (User.checkUserName(username)) {
             communication.send("Username already exists");
             return;
         }
@@ -152,7 +156,7 @@ public class SessionManager implements Runnable {
             return;
         }
         User user = new User(username, password);
-        
+
         if (!user.checkUser(user)) {
             user.insertUser(user);
             communication.send("User added");
@@ -183,6 +187,7 @@ public class SessionManager implements Runnable {
         if (user.checkUser(user)) {
             communication.send("User logged in");
             actualState = State.LOGGED;
+            actUser = user;
         } else {
             communication.send("User not found, please retry o register");
         }
@@ -258,4 +263,103 @@ public class SessionManager implements Runnable {
             System.err.println("Error closing socket: " + e.getMessage());
         }
     }
+
+    public void addReview(CommunicationManager communication){
+        int id = 0, rate = 0, cleaning = 0, position = 0, services = 0, quality = 0;
+        communication.send("Insert hotel city");
+        communication.send("PROMPT");
+        String hotelCity = communication.receive();
+        if (hotelCity == null) {
+            return;
+        }
+        communication.send("Insert hotel name");
+        communication.send("PROMPT");
+        String hotelName = communication.receive();
+
+        if (hotelName == null) {
+            return;
+        }
+
+        if (hotels == null || (hotels.containsKey(hotelCity) == false)) {
+            searchEngine.updateHotelListByCity(hotelCity, hotels);
+        }
+        Hotel hotel = searchEngine.searchByHotelName(hotelCity, hotelName, hotels);
+        
+        id = hotel.getId();
+        
+        communication.send("Insert rate");
+        communication.send("PROMPT");
+
+        String rateString = communication.receive();
+        if (rateString == null) {
+            return;
+        }
+        try {
+            rate = Integer.parseInt(rateString);
+        } catch (NumberFormatException e) {
+            communication.send("Invalid rate");
+            return;
+        }
+
+        communication.send("Insert cleaning");
+        communication.send("PROMPT");
+        String cleaningString = communication.receive();
+        if (cleaningString == null) {
+            return;
+        }
+        try {
+            cleaning = Integer.parseInt(cleaningString);
+        } catch (NumberFormatException e) {
+            communication.send("Invalid cleaning");
+            return;
+        }
+
+        communication.send("Insert position");
+        communication.send("PROMPT");
+        String positionString = communication.receive();
+        if (positionString == null) {
+            return;
+        }
+        try {
+            position = Integer.parseInt(cleaningString);
+        } catch (NumberFormatException e) {
+            communication.send("Invalid position");
+            return;
+        }
+
+        communication.send("Insert services");
+        communication.send("PROMPT");
+        String servicesString = communication.receive();
+        if (servicesString == null) {
+            return;
+        }
+        try {
+            services = Integer.parseInt(cleaningString);
+        } catch (NumberFormatException e) {
+            communication.send("Invalid services");
+            return;
+        }
+
+        communication.send("Insert quality");
+        communication.send("PROMPT");
+        String qualityString = communication.receive();
+        if (qualityString == null) {
+            return;
+        }
+        try {
+            quality = Integer.parseInt(cleaningString);
+        } catch (NumberFormatException e) {
+            communication.send("Invalid quality");
+            return;
+        }
+
+        ReviewEngine reviewEngine = new ReviewEngine(hotelsPath);
+        reviewEngine.addReview(id, rate, cleaning, position, services, quality);
+        //reviewEngine.calculateMeanRatesById();
+        communication.send("Review added");      
+        
+        
+        
+    }
+        
 }

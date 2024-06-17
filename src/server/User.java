@@ -20,6 +20,7 @@ public class User {
     public String username;
     public String password;
     private static final String filePath = "./Users.json";
+    private int reviewCount = 0;
 
     /**
      * Constructor
@@ -30,15 +31,7 @@ public class User {
     public User(String username, String password) {
         this.username = username;
         this.password = password;
-    }
-
-    /**
-     * Get the username
-     * 
-     * @return the username
-     */
-    public String getUsername() {
-        return username;
+        this.reviewCount = 0;
     }
 
     /**
@@ -121,7 +114,7 @@ public class User {
      * @param user
      * @return true if the username is already in the list, false otherwise
      */
-    synchronized public static boolean checkUserName(String usernameToCheck) {
+    synchronized static public boolean checkUserName(String usernameToCheck) {
         Gson gson = new Gson();
         List<User> users = new ArrayList<>();
 
@@ -146,5 +139,41 @@ public class User {
     }
 
 
+    synchronized public void addReviewCount() {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        List<User> users = new ArrayList<>();
+        this.reviewCount++; // Incrementa il contatore delle recensioni per l'utente corrente
+
+        try (Reader reader = new FileReader(filePath)) {
+            Type userListType = new TypeToken<ArrayList<User>>() {}.getType();
+            users = gson.fromJson(reader, userListType);
+            if (users == null) {
+                users = new ArrayList<>();
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found. A new file will be created.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Trova l'utente corrente nell'elenco e aggiorna il suo reviewCount
+        for (User user : users) {
+            if (user.username.equals(this.username)) {
+                user.reviewCount = this.reviewCount;
+                break;
+            }
+        }
+
+        // Sovrascrivi il file con l'elenco aggiornato degli utenti
+        try (Writer writer = new FileWriter(filePath)) {
+            gson.toJson(users, writer);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int getReviewCount() {
+        return this.reviewCount;
+    }
     
 }

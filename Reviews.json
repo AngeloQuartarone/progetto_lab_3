@@ -1,0 +1,42 @@
+{
+  "2": [
+    {
+      "rate": 3,
+      "cleaning": 3,
+      "position": 3,
+      "services": 3,
+      "quality": 3,
+      "timeStamp": "2024-06-17 20:19:18"
+    }
+  ],
+  "3": [
+    {
+      "rate": 4,
+      "cleaning": 4,
+      "position": 4,
+      "services": 4,
+      "quality": 4,
+      "timeStamp": "2024-06-17 20:19:18"
+    }
+  ],
+  "4": [
+    {
+      "rate": 5,
+      "cleaning": 5,
+      "position": 5,
+      "services": 5,
+      "quality": 5,
+      "timeStamp": "2024-06-17 20:19:18"
+    }
+  ],
+  "5": [
+    {
+      "rate": 5,
+      "cleaning": 5,
+      "position": 5,
+      "services": 5,
+      "quality": 5,
+      "timeStamp": "2024-06-17 20:19:18"
+    }
+  ]
+}

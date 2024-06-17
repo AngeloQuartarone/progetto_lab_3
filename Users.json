@@ -1,18 +1,17 @@
 [
   {
-    "username": "1",
-    "password": "1"
-  },
-  {
     "username": "angelo",
-    "password": "angelo"
+    "password": "angelo",
+    "reviewCount": 1
   },
   {
     "username": "biagio",
-    "password": "biagio"
+    "password": "biagio",
+    "reviewCount": 0
   },
   {
     "username": "carlo",
-    "password": "romano"
+    "password": "romano",
+    "reviewCount": 0
   }
 ]

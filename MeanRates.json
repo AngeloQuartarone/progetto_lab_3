@@ -1,0 +1,23 @@
+{
+  "2": {
+    "rate": 5,
+    "cleaning": 5,
+    "position": 5,
+    "services": 5,
+    "quality": 5
+  },
+  "3": {
+    "rate": 4,
+    "cleaning": 4,
+    "position": 4,
+    "services": 4,
+    "quality": 4
+  },
+  "13": {
+    "rate": 5,
+    "cleaning": 5,
+    "position": 5,
+    "services": 5,
+    "quality": 5
+  }
+}
