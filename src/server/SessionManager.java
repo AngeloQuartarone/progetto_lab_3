@@ -6,7 +6,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.io.*;
 
 enum State {
-    NO_LOGGED, LOGGED, SEARCH, SEARCH_CITY, REGISTER, LOGIN, LOGOUT, REVIEW, BADGE, EXIT
+    NO_LOGGED, LOGGED
 }
 
 public class SessionManager implements Runnable {
@@ -76,20 +76,15 @@ public class SessionManager implements Runnable {
             }
             switch (message) {
                 case "1":
-                    // actualState = State.REGISTER;
                     registerUser(communication);
                     break;
                 case "2":
-                    // actualState = State.LOGIN;
                     loginUser(communication);
-                    // actualState = State.LOGGED;
                     break;
                 case "3":
-                    // searchHotel(communication);
                     searchHotel(communication);
                     break;
                 case "4":
-                    // searchHotelByCity(communication);
                     searchHotelByCity(communication);
                     break;
                 case "5":
@@ -106,15 +101,12 @@ public class SessionManager implements Runnable {
             message = communication.receive();
             switch (message) {
                 case "1":
-                    // searchHotel(communication);
                     searchHotel(communication);
                     break;
                 case "2":
-                    // searchHotelByCity(communication);
                     searchHotelByCity(communication);
                     break;
                 case "3":
-                    // logout(communication);
                     actualState = State.NO_LOGGED;
                     break;
                 case "4":
@@ -141,11 +133,16 @@ public class SessionManager implements Runnable {
      * 
      * @param communication
      */
-    private static void registerUser(CommunicationManager communication) {
+    private void registerUser(CommunicationManager communication) {
         communication.send("Insert username");
         communication.send("PROMPT");
         String username = communication.receive();
         if (username == null) {
+            return;
+        }
+
+        if(User.checkUserName(username)) {
+            communication.send("Username already exists");
             return;
         }
         communication.send("Insert password");
@@ -155,11 +152,12 @@ public class SessionManager implements Runnable {
             return;
         }
         User user = new User(username, password);
-        if (!User.checkUser(user)) {
-            User.insertUser(user);
+        
+        if (!user.checkUser(user)) {
+            user.insertUser(user);
             communication.send("User added");
         } else {
-            communication.send("User already exists");
+            communication.send("User already exists, do you want to login?");
         }
     }
 
@@ -182,7 +180,7 @@ public class SessionManager implements Runnable {
             return;
         }
         User user = new User(username, password);
-        if (User.checkUser(user)) {
+        if (user.checkUser(user)) {
             communication.send("User logged in");
             actualState = State.LOGGED;
         } else {
@@ -216,11 +214,6 @@ public class SessionManager implements Runnable {
             String toSend = searchEngine.formatHotelsList(hotelList);
             communication.send(toSend);
         }
-
-        // hotels = searchEngine.searchByCity(hotelName);
-        // ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels =
-        // searchEngine.searchByCity(hotelName);
-
     }
 
     /**

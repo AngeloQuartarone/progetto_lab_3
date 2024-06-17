@@ -34,9 +34,6 @@ public class ServerMain {
         executor = Executors.newCachedThreadPool();
         
         try {
-            // Assicurati che la variabile port sia definita e inizializzata correttamente
-            // Esempio: int port = 8080;
-            // serverSocket = new ServerSocket(port);
 
             while (true) {
                 System.out.println("In attesa di connessioni... Thread: " + Thread.currentThread().getName());
@@ -58,7 +55,6 @@ public class ServerMain {
                 if (serverSocket != null) {
                     serverSocket.close();
                 }
-                // Chiudi la ThreadPool solo se non è null
                 if (executor != null) {
                     executor.shutdown();
                 }
@@ -85,8 +81,6 @@ public class ServerMain {
 
         try {
             prop.load(input);
-
-            // Leggi le proprietà
             ipAddr = prop.getProperty("IP");
             port = prop.getProperty("PORT");
             hotelsPath = prop.getProperty("HOTELSPATH");
