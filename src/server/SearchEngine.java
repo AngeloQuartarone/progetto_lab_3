@@ -25,12 +25,11 @@ public class SearchEngine {
     }
 
     /**
-     * Parse the file and return a ConcurrentHashMap with the hotels
-     * 
-     * @return a ConcurrentHashMap with the hotels
+     * Update the hotel list by city (if is not present yet)
+     * @param cityFilter
+     * @param existingHotels
      */
-    public ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> searchByCity(String cityFilter) {
-        ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = new ConcurrentHashMap<>();
+    synchronized public void updateHotelListByCity(String cityFilter, ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> existingHotels) {
         Double c = 0.0, p = 0.0, s = 0.0, q = 0.0;
 
         JsonReader reader = null;
@@ -96,9 +95,9 @@ public class SearchEngine {
                 }
                 reader.endObject();
 
-                // Filtra per città
+                // Filtra per città e aggiunge alla mappa esistente
                 if (hotel.city.equalsIgnoreCase(cityFilter)) {
-                    hotels.computeIfAbsent(hotel.city, k -> new LinkedBlockingQueue<>()).add(hotel);
+                    existingHotels.computeIfAbsent(hotel.city, k -> new LinkedBlockingQueue<>()).add(hotel);
                 }
             }
             reader.endArray();
@@ -115,7 +114,6 @@ public class SearchEngine {
                 e.printStackTrace();
             }
         }
-        return hotels;
     }
 
     /**
@@ -126,7 +124,7 @@ public class SearchEngine {
      * @param hotels the ConcurrentHashMap with the hotels
      * @return the hotel if found, null otherwise
      */
-    public Hotel searchByHotelName(String cityFilter, String hotelName, ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels) {
+    synchronized public Hotel searchByHotelName(String cityFilter, String hotelName, ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels) {
         Hotel resultHotel = null;
         System.out.println("City: " + cityFilter);
         LinkedBlockingQueue<Hotel> hotelsInCity = hotels.get(cityFilter);
@@ -148,13 +146,14 @@ public class SearchEngine {
         return resultHotel;
     }
 
+
     /**
      * Format the hotels in a readable way
      * 
      * @param hotels the ConcurrentHashMap with the hotels
      * @return a formatted string with the hotels
      */
-    public String formatHotels(ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels) {
+    public String formatHotelsHash(ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels) {
         StringBuilder sb = new StringBuilder();
         sb.append("\n\n------------------------------\n");
         for (Map.Entry<String, LinkedBlockingQueue<Hotel>> entry : hotels.entrySet()) {
@@ -180,6 +179,33 @@ public class SearchEngine {
                 }
                 sb.append("------------------------------\n"); // Separatore per migliorare la leggibilità
             }
+        }
+        return sb.toString();
+    }
+
+    public String formatHotelsList(LinkedBlockingQueue<Hotel> hotels) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n\n------------------------------\n");
+        for (Hotel hotel : hotels) {
+            //sb.append("ID: ").append(hotel.id).append("\n");
+            sb.append("Name: ").append(hotel.name).append("\n");
+            sb.append("Description: ").append(hotel.description).append("\n");
+            sb.append("Phone: ").append(hotel.phone).append("\n");
+            sb.append("Services: ");
+            for (String service : hotel.services) {
+                sb.append(service).append(", ");
+            }
+            sb.setLength(sb.length() - 2); // Remove the last comma and space
+            sb.append("\n"); // New line after listing services
+            sb.append("Rate: ").append(hotel.rate).append("\n");
+            if (hotel.ratings != null) {
+                sb.append("Ratings:\n");
+                sb.append("\tCleaning: ").append(hotel.ratings.cleaning).append("\n");
+                sb.append("\tPosition: ").append(hotel.ratings.position).append("\n");
+                sb.append("\tServices: ").append(hotel.ratings.services).append("\n");
+                sb.append("\tQuality: ").append(hotel.ratings.quality).append("\n");
+            }
+            sb.append("------------------------------\n"); // Separator for readability
         }
         return sb.toString();
     }
@@ -221,5 +247,7 @@ public class SearchEngine {
         }
         return sb.toString();
     }
+
+
 
 }

@@ -25,7 +25,7 @@ public class SessionManager {
     /**
      * Constructor
      * 
-     * @param s the socket
+     * @param s       the socket
      * @param hotelsP the path of the hotels file
      */
     public SessionManager(Socket s, String hotelsP) {
@@ -40,6 +40,7 @@ public class SessionManager {
         searchEngine = new SearchEngine(hotelsPath);
         DataInputStream in = null;
         DataOutputStream out = null;
+        hotels = new ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>>();
 
         try {
             in = new DataInputStream(socket.getInputStream());
@@ -164,6 +165,7 @@ public class SessionManager {
 
     /**
      * Register a user
+     * 
      * @param communication
      */
     private static void registerUser(CommunicationManager communication) {
@@ -190,6 +192,7 @@ public class SessionManager {
 
     /**
      * Login a user
+     * 
      * @param communication
      */
     private static void loginUser(CommunicationManager communication) {
@@ -216,25 +219,40 @@ public class SessionManager {
 
     /**
      * Search a hotel by city
+     * 
      * @param communication
      */
     public static void searchHotelByCity(CommunicationManager communication) {
+        LinkedBlockingQueue<Hotel> hotelList = null;
         communication.send("Insert city");
         communication.send("PROMPT");
-        String hotelName = communication.receive();
-        if (hotelName == null) {
+        String hotelCity = communication.receive();
+        if (hotelCity == null) {
             return;
         }
 
-        hotels = searchEngine.searchByCity(hotelName);
+        if (hotels == null || (hotels.containsKey(hotelCity) == false)) {
+            searchEngine.updateHotelListByCity(hotelCity, hotels);
+        }
+
+        hotelList = hotels.get(hotelCity);
+        if (hotelList == null) {
+            communication.send("No hotels found in this city");
+            return;
+        } else {
+            String toSend = searchEngine.formatHotelsList(hotelList);
+            communication.send(toSend);
+        }
+
+        // hotels = searchEngine.searchByCity(hotelName);
         // ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels =
         // searchEngine.searchByCity(hotelName);
-        String toSend = searchEngine.formatHotels(hotels);
-        communication.send(toSend);
+
     }
 
     /**
      * Search a hotel
+     * 
      * @param communication
      */
     public static void searchHotel(CommunicationManager communication) {
@@ -247,10 +265,14 @@ public class SessionManager {
         communication.send("Insert hotel name");
         communication.send("PROMPT");
         String hotelName = communication.receive();
+
         if (hotelName == null) {
             return;
         }
-        hotels = searchEngine.searchByCity(hotelCity);
+
+        if (hotels == null || (hotels.containsKey(hotelCity) == false)) {
+            searchEngine.updateHotelListByCity(hotelCity, hotels);
+        }
         Hotel hotel = searchEngine.searchByHotelName(hotelCity, hotelName, hotels);
         String toSend = searchEngine.formatSingleHotel(hotel);
         communication.send(toSend);
@@ -258,6 +280,7 @@ public class SessionManager {
 
     /**
      * Exit the session
+     * 
      * @param communication
      */
     private static void exit(CommunicationManager communication) {
