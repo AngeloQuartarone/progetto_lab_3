@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * ServerMain class
@@ -16,7 +18,8 @@ public class ServerMain {
     private static String ipAddr = "";
     private static String port = "";
     private static ServerSocket serverSocket = null;
-    private static Socket clientSocket = null;
+    //private static Socket clientSocket = null;
+    private static ExecutorService executor = null;
 
     /**
      * Main method
@@ -27,31 +30,44 @@ public class ServerMain {
     public static void main(String[] args) throws Exception {
         ServerMain server = new ServerMain();
         server.init("./src/server/serverParameter.properties");
-        //JsonParser x = new JsonParser(hotelsPath);
-        //ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = new ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>>();
-        // hotels = x.parse();
-        // x.printAll(hotels);
+
+        executor = Executors.newCachedThreadPool();
+        
         try {
-            //serverSocket = new ServerSocket(Integer.parseInt(port));
+            // Assicurati che la variabile port sia definita e inizializzata correttamente
+            // Esempio: int port = 8080;
+            // serverSocket = new ServerSocket(port);
 
             while (true) {
-                clientSocket = serverSocket.accept();
+                System.out.println("In attesa di connessioni... Thread: " + Thread.currentThread().getName());
+                Socket clientSocket = serverSocket.accept();
+                System.out.println("Connessione accettata da: " + clientSocket.getInetAddress().getHostAddress() + " - Thread: " + Thread.currentThread().getName());
                 SessionManager connection = new SessionManager(clientSocket, hotelsPath);
-                connection.run();
+                
+                executor.execute(() -> {
+                    System.out.println("Gestione connessione iniziata - Thread: " + Thread.currentThread().getName());
+                    connection.run();
+                    System.out.println("Gestione connessione terminata - Thread: " + Thread.currentThread().getName());
+                });
             }
 
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (serverSocket != null) {
+                    serverSocket.close();
+                }
+                // Chiudi la ThreadPool solo se non è null
+                if (executor != null) {
+                    executor.shutdown();
+                }
+            } catch (IOException i) {
+                System.out.println(i);
+            }
         }
-
-        try {
-            serverSocket.close();
-            clientSocket.close();
-        } catch (IOException i) {
-            System.out.println(i);
-        }
-
     }
+
 
     /**
      * Initialize the server

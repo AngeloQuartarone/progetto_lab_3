@@ -9,64 +9,38 @@ enum State {
     NO_LOGGED, LOGGED, SEARCH, SEARCH_CITY, REGISTER, LOGIN, LOGOUT, REVIEW, BADGE, EXIT
 }
 
-/**
- * SessionManager class
- */
-public class SessionManager {
-    private static Socket socket = null;
-    private static String hotelsPath = null;
-    private static CommunicationManager communication;
-    private static State actualState = State.NO_LOGGED;
-    // private SearchEngine searchEngine = null;
-    // File userFile = new File("./src/server/users.json");
-    private static ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = null;
-    private static SearchEngine searchEngine = null;
+public class SessionManager implements Runnable {
+    private Socket socket = null;
+    private String hotelsPath = null;
+    private CommunicationManager communication;
+    private State actualState = State.NO_LOGGED;
+    private ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = new ConcurrentHashMap<>();
+    private SearchEngine searchEngine = null;
 
-    /**
-     * Constructor
-     * 
-     * @param s       the socket
-     * @param hotelsP the path of the hotels file
-     */
     public SessionManager(Socket s, String hotelsP) {
-        socket = s;
-        hotelsPath = hotelsP;
+        this.socket = s;
+        this.hotelsPath = hotelsP;
     }
 
-    /**
-     * Run the session
-     */
+    @Override
     public void run() {
-        searchEngine = new SearchEngine(hotelsPath);
+        this.searchEngine = new SearchEngine(hotelsPath);
         DataInputStream in = null;
         DataOutputStream out = null;
-        hotels = new ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>>();
 
         try {
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
-            communication = new CommunicationManager(in, out);
+            this.communication = new CommunicationManager(in, out);
 
             while (!socket.isClosed()) {
-
                 if (!handleMessage()) {
                     break;
                 }
             }
-            /*
-             * if (!socket.isClosed()) {
-             * try {
-             * socket.close();
-             * } catch (IOException e) {
-             * System.err.println("Error closing socket: " + e.getMessage());
-             * }
-             * }
-             */
-
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
-
             try {
                 if (socket != null)
                     socket.close();
@@ -78,7 +52,6 @@ public class SessionManager {
                 System.out.println("Error closing resources: " + e);
             }
         }
-
     }
 
     /**
@@ -86,7 +59,7 @@ public class SessionManager {
      * 
      * @return true if the message is handled, false otherwise
      */
-    private static boolean handleMessage() {
+    private boolean handleMessage() {
         String message = null;
         if (actualState == State.NO_LOGGED) {
             try {
@@ -195,7 +168,7 @@ public class SessionManager {
      * 
      * @param communication
      */
-    private static void loginUser(CommunicationManager communication) {
+    private void loginUser(CommunicationManager communication) {
         communication.send("Insert username");
         communication.send("PROMPT");
         String username = communication.receive();
@@ -222,7 +195,7 @@ public class SessionManager {
      * 
      * @param communication
      */
-    public static void searchHotelByCity(CommunicationManager communication) {
+    public void searchHotelByCity(CommunicationManager communication) {
         LinkedBlockingQueue<Hotel> hotelList = null;
         communication.send("Insert city");
         communication.send("PROMPT");
@@ -255,7 +228,7 @@ public class SessionManager {
      * 
      * @param communication
      */
-    public static void searchHotel(CommunicationManager communication) {
+    public void searchHotel(CommunicationManager communication) {
         communication.send("Insert hotel city");
         communication.send("PROMPT");
         String hotelCity = communication.receive();
@@ -283,7 +256,7 @@ public class SessionManager {
      * 
      * @param communication
      */
-    private static void exit(CommunicationManager communication) {
+    private void exit(CommunicationManager communication) {
         try {
             communication.send("Goodbye!");
             communication.send("EXIT");
