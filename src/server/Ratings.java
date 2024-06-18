@@ -4,10 +4,10 @@ package server;
  * Ratings class
  */
 public class Ratings {
-    Double cleaning;
-    Double position;
-    Double services;
-    Double quality;
+    int cleaning;
+    int position;
+    int services;
+    int quality;
 
     /**
      * Constructor
@@ -17,7 +17,7 @@ public class Ratings {
      * @param services
      * @param quality
      */
-    public Ratings(Double c, Double p, Double s, Double q){
+    public Ratings(int c, int p, int s, int q){
         this.cleaning = c;
         this.position = p;
         this.services = s;

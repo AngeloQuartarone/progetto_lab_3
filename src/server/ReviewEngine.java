@@ -4,15 +4,10 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -22,7 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 public class ReviewEngine {
@@ -35,6 +29,16 @@ public class ReviewEngine {
         this.hotelPath = hotelPath;
     }
 
+    /**
+     * Add a review to the review file
+     * 
+     * @param hotelIdentifier
+     * @param rate
+     * @param cleaning
+     * @param position
+     * @param services
+     * @param quality
+     */
     synchronized public void addReview(int hotelIdentifier, int rate, int cleaning, int position, int services,
             int quality) {
         ConcurrentHashMap<Integer, List<Review>> hotelReviews = new ConcurrentHashMap<>();
@@ -102,8 +106,6 @@ public class ReviewEngine {
         return hotelReviews;
     }
 
-   
-
     public void calculateMeanRatesById() {
         ConcurrentHashMap<Integer, List<Review>> hotelReviews = new ConcurrentHashMap<>();
         File reviewFile = new File(reviewPath);
@@ -112,7 +114,8 @@ public class ReviewEngine {
             return;
         } else {
             try (FileReader fileReader = new FileReader(reviewFile); JsonReader reader = new JsonReader(fileReader)) {
-                Type reviewMapType = new TypeToken<ConcurrentHashMap<Integer, List<Review>>>() {}.getType();
+                Type reviewMapType = new TypeToken<ConcurrentHashMap<Integer, List<Review>>>() {
+                }.getType();
                 hotelReviews = new Gson().fromJson(reader, reviewMapType);
                 if (hotelReviews == null) {
                     hotelReviews = new ConcurrentHashMap<>();
@@ -137,7 +140,8 @@ public class ReviewEngine {
             for (Review review : reviews) {
                 LocalDateTime reviewDate = LocalDateTime.parse(review.timeStamp, formatter);
                 long daysBetween = ChronoUnit.DAYS.between(reviewDate, currentDate);
-                double weight = Math.max(0, 365 - daysBetween) / 365.0; // Peso decresce con il passare dei giorni, 0 dopo un anno
+                double weight = Math.max(0, 365 - daysBetween) / 365.0; // Peso decresce con il passare dei giorni, 0
+                                                                        // dopo un anno
 
                 weightedRate += review.rate * weight;
                 weightedCleaning += review.cleaning * weight;
@@ -149,12 +153,12 @@ public class ReviewEngine {
 
             if (totalWeight > 0) {
                 List<Review> weightedReview = Arrays.asList(new Review(
-                    (int) (weightedRate / totalWeight),
-                    (int) (weightedCleaning / totalWeight),
-                    (int) (weightedPosition / totalWeight),
-                    (int) (weightedServices / totalWeight),
-                    (int) (weightedQuality / totalWeight),
-                    (String) currentDate.format(formatter)
+                        (int) (weightedRate / totalWeight),
+                        (int) (weightedCleaning / totalWeight),
+                        (int) (weightedPosition / totalWeight),
+                        (int) (weightedServices / totalWeight),
+                        (int) (weightedQuality / totalWeight),
+                        (String) currentDate.format(formatter)
 
                 ));
                 hotelReviews.put(hotelId, weightedReview);
@@ -167,4 +171,29 @@ public class ReviewEngine {
             e.printStackTrace();
         }
     }
+
+    synchronized public void updateHotelFile() {
+        ConcurrentHashMap<Integer, List<Review>> hotelReviews = getReviews(); // Ottieni le recensioni aggiornate
+        SearchEngine searchEngine = new SearchEngine(hotelPath);
+        ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = searchEngine.getHotelsHashMap();
+
+        for (String city : hotels.keySet()) {
+            LinkedBlockingQueue<Hotel> cityHotels = hotels.get(city);
+            for (Hotel hotel : cityHotels) {
+                int hotelId = hotel.getId();
+                if (hotelReviews.containsKey(hotelId)) {
+                    List<Review> reviews = hotelReviews.get(hotelId);
+                    Review review = reviews.get(0);
+                    hotel.rate = review.rate;
+                    hotel.ratings.cleaning = review.cleaning;
+                    hotel.ratings.position = review.position;
+                    hotel.ratings.services = review.services;
+                    hotel.ratings.quality = review.quality;
+                }
+            }
+        }
+
+        searchEngine.saveHotelsHashMap(hotels, "./Hotelaggiornati.json");
+    }
+
 }

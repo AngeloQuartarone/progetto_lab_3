@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
+import com.google.gson.stream.JsonWriter;
+import java.io.FileWriter;
 
 /**
  * SearchEngine class
@@ -31,8 +33,7 @@ public class SearchEngine {
      * @param existingHotels
      */
     synchronized public void updateHotelListByCity(String cityFilter, ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> existingHotels) {
-        Double c = 0.0, p = 0.0, s = 0.0, q = 0.0;
-        int id = 0, rate = 0;
+        int id = 0, rate = 0, c = 0, p = 0, s = 0, q = 0;
         String name = "", description = "", city = "", phone = "";
         ArrayList<String> services = new ArrayList<>();
 
@@ -44,6 +45,7 @@ public class SearchEngine {
             reader.beginArray();
             while (reader.hasNext()) {
                 reader.beginObject();
+                services = new ArrayList<>();
                 while (reader.hasNext()) {
                     String key = reader.nextName();
                     switch (key.toLowerCase()) {
@@ -63,7 +65,6 @@ public class SearchEngine {
                             phone = reader.nextString().toLowerCase();
                             break;
                         case "services":
-                            services.clear(); // Clear previous hotel services
                             reader.beginArray();
                             while (reader.hasNext()) {
                                 services.add(reader.nextString().toLowerCase());
@@ -79,16 +80,16 @@ public class SearchEngine {
                                 String ratingKey = reader.nextName();
                                 switch (ratingKey.toLowerCase()) {
                                     case "cleaning":
-                                        c = reader.nextDouble();
+                                        c = reader.nextInt();
                                         break;
                                     case "position":
-                                        p = reader.nextDouble();
+                                        p = reader.nextInt();
                                         break;
                                     case "services":
-                                        s = reader.nextDouble();
+                                        s = reader.nextInt();
                                         break;
                                     case "quality":
-                                        q = reader.nextDouble();
+                                        q = reader.nextInt();
                                         break;
                                 }
                             }
@@ -98,10 +99,8 @@ public class SearchEngine {
                 }
                 reader.endObject();
 
-                // Create a new Hotel instance with the new constructor
-                Hotel hotel = new Hotel(id, name, description, city, phone, rate, c, p, s, q);
+                Hotel hotel = new Hotel(id, name, description, city, phone, services, rate, c, p, s, q);
 
-                // Filtra per città e aggiunge alla mappa esistente
                 if (hotel.city.equalsIgnoreCase(cityFilter)) {
                     existingHotels.computeIfAbsent(hotel.city, k -> new LinkedBlockingQueue<>()).add(hotel);
                 }
@@ -121,6 +120,139 @@ public class SearchEngine {
             }
         }
     }
+
+
+    synchronized public ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> getHotelsHashMap() {
+        ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> existingHotels = new ConcurrentHashMap<>();
+        int id = 0, rate = 0, c = 0, p = 0, s = 0, q = 0;
+        String name = "", description = "", city = "", phone = "";
+
+        JsonReader reader = null;
+        try {
+            reader = new JsonReader(new FileReader(filePath));
+            System.out.println(filePath);
+
+            reader.beginArray();
+            while (reader.hasNext()) {
+                reader.beginObject();
+                ArrayList<String> services = new ArrayList<>(); // Inizializza una nuova lista di servizi per ogni hotel
+                while (reader.hasNext()) {
+                    String key = reader.nextName();
+                    switch (key.toLowerCase()) {
+                        case "id":
+                            id = reader.nextInt();
+                            break;
+                        case "name":
+                            name = reader.nextString().toLowerCase();
+                            break;
+                        case "description":
+                            description = reader.nextString().toLowerCase();
+                            break;
+                        case "city":
+                            city = reader.nextString().toLowerCase();
+                            break;
+                        case "phone":
+                            phone = reader.nextString().toLowerCase();
+                            break;
+                        case "services":
+                            // Non è più necessario chiamare services.clear()
+                            reader.beginArray();
+                            while (reader.hasNext()) {
+                                services.add(reader.nextString().toLowerCase());
+                            }
+                            reader.endArray();
+                            break;
+                        case "rate":
+                            rate = reader.nextInt();
+                            break;
+                        case "ratings":
+                            reader.beginObject();
+                            while (reader.hasNext()) {
+                                String ratingKey = reader.nextName();
+                                switch (ratingKey.toLowerCase()) {
+                                    case "cleaning":
+                                        c = reader.nextInt();
+                                        break;
+                                    case "position":
+                                        p = reader.nextInt();
+                                        break;
+                                    case "services":
+                                        s = reader.nextInt();
+                                        break;
+                                    case "quality":
+                                        q = reader.nextInt();
+                                        break;
+                                }
+                            }
+                            reader.endObject();
+                            break;
+                    }
+                }
+                reader.endObject();
+
+                // Crea una nuova istanza di Hotel con la sua lista unica di servizi
+                Hotel hotel = new Hotel(id, name, description, city, phone, services, rate, c, p, s, q);
+
+                // Aggiunge l'hotel alla mappa existingHotels senza filtrare per città
+                existingHotels.computeIfAbsent(hotel.city, k -> new LinkedBlockingQueue<>()).add(hotel);
+            }
+            reader.endArray();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (reader != null) {
+                    reader.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return existingHotels;
+    }
+
+
+
+
+
+public void saveHotelsHashMap(ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotelsMap, String filePath) {
+    try (JsonWriter writer = new JsonWriter(new FileWriter(filePath))) {
+        writer.beginArray();
+        for (LinkedBlockingQueue<Hotel> hotels : hotelsMap.values()) {
+            for (Hotel hotel : hotels) {
+                writer.beginObject();
+                writer.name("id").value(hotel.getId());
+                writer.name("name").value(hotel.getName());
+                writer.name("description").value(hotel.getDescription());
+                writer.name("city").value(hotel.getCity());
+                writer.name("phone").value(hotel.getPhone());
+                writer.name("rate").value(hotel.getRate());
+
+                writer.name("services");
+                writer.beginArray();
+                for (String service : hotel.getServices()) {
+                    writer.value(service);
+                }
+                writer.endArray();
+
+                writer.name("ratings");
+                writer.beginObject();
+                writer.name("cleaning").value(hotel.getCleaning());
+                writer.name("position").value(hotel.getPosition());
+                writer.name("services").value(hotel.getServicesRating());
+                writer.name("quality").value(hotel.getQuality());
+                writer.endObject();
+
+                writer.endObject();
+            }
+        }
+        writer.endArray();
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
 
     /**
      * Search for a hotel by name
@@ -200,6 +332,7 @@ public class SearchEngine {
             sb.append("Services: ");
             for (String service : hotel.services) {
                 sb.append(service).append(", ");
+                //System.out.println(service);
             }
             sb.setLength(sb.length() - 2); // Remove the last comma and space
             sb.append("\n"); // New line after listing services

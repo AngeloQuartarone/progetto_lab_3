@@ -14,7 +14,7 @@ public class SessionManager implements Runnable {
     private String hotelsPath = null;
     private CommunicationManager communication;
     private State actualState = State.NO_LOGGED;
-    private ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels;
     private SearchEngine searchEngine = null;
     private User actUser = null;
 
@@ -26,6 +26,7 @@ public class SessionManager implements Runnable {
     @Override
     public void run() {
         this.searchEngine = new SearchEngine(hotelsPath);
+        this.hotels = new ConcurrentHashMap<>();
         DataInputStream in = null;
         DataOutputStream out = null;
 
@@ -212,11 +213,13 @@ public class SessionManager implements Runnable {
         }
 
         hotelList = hotels.get(hotelCity);
+        //System.out.println(hotelList);
         if (hotelList == null) {
             communication.send("No hotels found in this city");
             return;
         } else {
-            String toSend = searchEngine.formatHotelsList(hotelList);
+           String toSend = searchEngine.formatHotelsList(hotelList);
+            //String toSend = searchEngine.formatHotelsHash(hotels);
             communication.send(toSend);
         }
     }
@@ -355,7 +358,8 @@ public class SessionManager implements Runnable {
 
         ReviewEngine reviewEngine = new ReviewEngine(hotelsPath);
         reviewEngine.addReview(id, rate, cleaning, position, services, quality);
-        //reviewEngine.calculateMeanRatesById();
+        reviewEngine.calculateMeanRatesById();
+        reviewEngine.updateHotelFile();
         communication.send("Review added");      
         
         
