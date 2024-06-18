@@ -40,7 +40,8 @@ public class SearchEngine {
         JsonReader reader = null;
         try {
             reader = new JsonReader(new FileReader(filePath));
-            System.out.println(filePath);
+            //System.out.println("Access to hotel file in path in updateHotelListByCity: " + filePath);
+            System.out.println("[" + Thread.currentThread().getName() + "] - Access to hotel file in path" + filePath);
 
             reader.beginArray();
             while (reader.hasNext()) {
@@ -130,7 +131,9 @@ public class SearchEngine {
         JsonReader reader = null;
         try {
             reader = new JsonReader(new FileReader(filePath));
-            System.out.println(filePath);
+            //System.out.println("Access to hotel file in path by getHotelsHashMap: " + filePath);
+            System.out.println("[" + Thread.currentThread().getName() + "] - Access to hotel file in path" + filePath);
+
 
             reader.beginArray();
             while (reader.hasNext()) {

@@ -20,12 +20,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
 public class ReviewEngine {
-    private String reviewPath;
+    private String reviewPath = "./Reviews.json";
     private String hotelPath;
-    // private Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public ReviewEngine(String hotelPath) {
-        this.reviewPath = "./Reviews.json";
         this.hotelPath = hotelPath;
     }
 
@@ -107,68 +105,99 @@ public class ReviewEngine {
     }
 
     public void calculateMeanRatesById() {
+        // Mappa concorrente per memorizzare le recensioni degli hotel
         ConcurrentHashMap<Integer, List<Review>> hotelReviews = new ConcurrentHashMap<>();
+        // File delle recensioni
         File reviewFile = new File(reviewPath);
 
+        // Se il file delle recensioni non esiste, prova a crearlo
         if (!reviewFile.exists()) {
-            return;
+            try {
+                if (reviewFile.createNewFile()) {
+                    System.out.println("File created: " + reviewFile.getName());
+                } else {
+                    System.out.println("File already exists.");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+                return;
+            }
         } else {
+            // Blocco try-with-resources per leggere il file JSON delle recensioni
             try (FileReader fileReader = new FileReader(reviewFile); JsonReader reader = new JsonReader(fileReader)) {
+                // Tipo della mappa delle recensioni
                 Type reviewMapType = new TypeToken<ConcurrentHashMap<Integer, List<Review>>>() {
                 }.getType();
+                // Deserializza il file JSON in una mappa
                 hotelReviews = new Gson().fromJson(reader, reviewMapType);
+                // Se la mappa è null, crea una nuova mappa vuota
                 if (hotelReviews == null) {
                     hotelReviews = new ConcurrentHashMap<>();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                e.printStackTrace(); // Stampa lo stack trace in caso di eccezione
             }
         }
 
+        // Formattatore per le date
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        // Data e ora corrente
         LocalDateTime currentDate = LocalDateTime.now();
 
+        // Itera su tutti gli ID degli hotel nella mappa
         for (Integer hotelId : hotelReviews.keySet()) {
+            // Ottiene la lista delle recensioni per l'hotel corrente
             List<Review> reviews = hotelReviews.get(hotelId);
+            // Inizializza variabili per il calcolo dei pesi e delle somme delle valutazioni
             double weightedRate = 0;
-            double weightedCleaning = 0;
-            double weightedPosition = 0;
-            double weightedServices = 0;
-            double weightedQuality = 0;
+            double sumCleaning = 0;
+            double sumPosition = 0;
+            double sumServices = 0;
+            double sumQuality = 0;
             double totalWeight = 0;
+            // Peso basato sul numero di recensioni
+            double reviewCountWeight = Math.log1p(reviews.size());
 
+            // Itera su tutte le recensioni dell'hotel corrente
             for (Review review : reviews) {
+                // Parsea la data della recensione
                 LocalDateTime reviewDate = LocalDateTime.parse(review.timeStamp, formatter);
+                // Calcola i giorni trascorsi dalla recensione
                 long daysBetween = ChronoUnit.DAYS.between(reviewDate, currentDate);
-                double weight = Math.max(0, 365 - daysBetween) / 365.0; // Peso decresce con il passare dei giorni, 0
-                                                                        // dopo un anno
+                // Calcola il peso basato sulla recenza (decresce nel tempo, 0 dopo un anno)
+                double recencyWeight = Math.max(0, 365 - daysBetween) / 365.0;
+                // Combina i pesi di recenza e numero di recensioni
+                double weight = recencyWeight * reviewCountWeight;
 
+                // Aggiunge i valori pesati alle somme totali
                 weightedRate += review.rate * weight;
-                weightedCleaning += review.cleaning * weight;
-                weightedPosition += review.position * weight;
-                weightedServices += review.services * weight;
-                weightedQuality += review.quality * weight;
+                sumCleaning += review.cleaning;
+                sumPosition += review.position;
+                sumServices += review.services;
+                sumQuality += review.quality;
                 totalWeight += weight;
             }
 
+            // Calcola le medie ponderate se il peso totale è maggiore di zero
             if (totalWeight > 0) {
+                // Crea una nuova lista con una singola recensione media ponderata
                 List<Review> weightedReview = Arrays.asList(new Review(
                         (int) (weightedRate / totalWeight),
-                        (int) (weightedCleaning / totalWeight),
-                        (int) (weightedPosition / totalWeight),
-                        (int) (weightedServices / totalWeight),
-                        (int) (weightedQuality / totalWeight),
-                        (String) currentDate.format(formatter)
-
-                ));
+                        (int) (sumCleaning / reviews.size()),
+                        (int) (sumPosition / reviews.size()),
+                        (int) (sumServices / reviews.size()),
+                        (int) (sumQuality / reviews.size()),
+                        currentDate.format(formatter)));
+                // Aggiorna la mappa con la nuova recensione ponderata
                 hotelReviews.put(hotelId, weightedReview);
             }
         }
 
+        // Scrive la mappa aggiornata nel file JSON
         try (Writer writer = new FileWriter(reviewFile)) {
             new GsonBuilder().setPrettyPrinting().create().toJson(hotelReviews, writer);
         } catch (IOException e) {
-            e.printStackTrace();
+            e.printStackTrace(); // Stampa lo stack trace in caso di eccezione
         }
     }
 
@@ -193,7 +222,7 @@ public class ReviewEngine {
             }
         }
 
-        searchEngine.saveHotelsHashMap(hotels, "./Hotelaggiornati.json");
+        searchEngine.saveHotelsHashMap(hotels, hotelPath);
     }
 
 }

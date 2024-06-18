@@ -2261,7 +2261,7 @@
         "description": "un bellissimo hotel a torino, in via napoli, 51",
         "city": "torino",
         "phone": "323-4364048",
-        "rate": 0,
+        "rate": 2,
         "services": [
             "tv in camera",
             "cancellazione gratuita",
@@ -2272,10 +2272,10 @@
             "frigo in camera"
         ],
         "ratings": {
-            "cleaning": 0,
-            "position": 0,
-            "services": 0,
-            "quality": 0
+            "cleaning": 3,
+            "position": 3,
+            "services": 3,
+            "quality": 3
         }
     },
     {
@@ -3334,7 +3334,7 @@
         "description": "un grazioso hotel a aosta, in via leonardo da vinci, 87",
         "city": "aosta",
         "phone": "393-2959804",
-        "rate": 3,
+        "rate": 4,
         "services": [],
         "ratings": {
             "cleaning": 3,
@@ -3349,13 +3349,13 @@
         "description": "un organizzato hotel a aosta, in via cavour, 37",
         "city": "aosta",
         "phone": "392-3923265",
-        "rate": 0,
+        "rate": 5,
         "services": [],
         "ratings": {
-            "cleaning": 0,
-            "position": 0,
-            "services": 0,
-            "quality": 0
+            "cleaning": 5,
+            "position": 5,
+            "services": 5,
+            "quality": 5
         }
     },
     {

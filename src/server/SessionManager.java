@@ -69,13 +69,11 @@ public class SessionManager implements Runnable {
                         .send("Benvenuto!\n\n1) Register\n2) Login\n3) Search hotel\n4) Search hotel by city\n5) Exit");
                 communication.send("PROMPT");
                 message = communication.receive();
+                message.trim();
             } catch (Exception e) {
                 return false;
             }
-
-            if (message == null) {
-                return false;
-            }
+            
             switch (message) {
                 case "1":
                     registerUser(communication);
@@ -101,6 +99,7 @@ public class SessionManager implements Runnable {
                     "Benvenuto!\n\n1) Search hotel\n2) Search hotel by city\n3) Logout\n4) Review\n5) Badge\n6) Exit");
             communication.send("PROMPT");
             message = communication.receive();
+            message.trim();
             switch (message) {
                 case "1":
                     searchHotel(communication);
@@ -112,16 +111,13 @@ public class SessionManager implements Runnable {
                     actualState = State.NO_LOGGED;
                     break;
                 case "4":
-                    // review(communication);
                     addReview(communication);
-
                     actUser.addReviewCount();
                     break;
                 case "5":
                     // badge(communication);
                     break;
                 case "6":
-                    // exit(communication);
                     exit(communication);
                     break;
                 default:
@@ -144,6 +140,8 @@ public class SessionManager implements Runnable {
         String username = communication.receive();
         if (username == null) {
             return;
+        } else{
+            username.trim();
         }
 
         if (User.checkUserName(username)) {
@@ -155,6 +153,8 @@ public class SessionManager implements Runnable {
         String password = communication.receive();
         if (password == null) {
             return;
+        }else{
+            password.trim();
         }
         User user = new User(username, password);
 
@@ -177,12 +177,16 @@ public class SessionManager implements Runnable {
         String username = communication.receive();
         if (username == null) {
             return;
+        } else{
+            username.trim();
         }
         communication.send("Insert password");
         communication.send("PROMPT");
         String password = communication.receive();
         if (password == null) {
             return;
+        }else{
+            password.trim();
         }
         User user = new User(username, password);
         if (user.checkUser(user)) {
@@ -206,6 +210,8 @@ public class SessionManager implements Runnable {
         String hotelCity = communication.receive();
         if (hotelCity == null) {
             return;
+        }else{
+            hotelCity.trim();
         }
 
         if (hotels == null || (hotels.containsKey(hotelCity) == false)) {
@@ -235,6 +241,8 @@ public class SessionManager implements Runnable {
         String hotelCity = communication.receive();
         if (hotelCity == null) {
             return;
+        }else{
+            hotelCity.trim();
         }
         communication.send("Insert hotel name");
         communication.send("PROMPT");
@@ -242,6 +250,8 @@ public class SessionManager implements Runnable {
 
         if (hotelName == null) {
             return;
+        }else{
+            hotelName.trim();
         }
 
         if (hotels == null || (hotels.containsKey(hotelCity) == false)) {
@@ -274,6 +284,8 @@ public class SessionManager implements Runnable {
         String hotelCity = communication.receive();
         if (hotelCity == null) {
             return;
+        }else{
+            hotelCity = hotelCity.trim();
         }
         communication.send("Insert hotel name");
         communication.send("PROMPT");
@@ -281,89 +293,111 @@ public class SessionManager implements Runnable {
 
         if (hotelName == null) {
             return;
+        }else{
+            hotelName = hotelName.trim();
         }
 
-        if (hotels == null || (hotels.containsKey(hotelCity) == false)) {
+        if (hotels == null || !hotels.containsKey(hotelCity)) {
             searchEngine.updateHotelListByCity(hotelCity, hotels);
         }
         Hotel hotel = searchEngine.searchByHotelName(hotelCity, hotelName, hotels);
-        
+
         id = hotel.getId();
-        
-        communication.send("Insert rate");
-        communication.send("PROMPT");
 
-        String rateString = communication.receive();
-        if (rateString == null) {
-            return;
-        }
-        try {
-            rate = Integer.parseInt(rateString);
-        } catch (NumberFormatException e) {
-            communication.send("Invalid rate");
-            return;
-        }
+        // Ciclo per rate
+        do {
+            communication.send("Insert rate (1-5)");
+            communication.send("PROMPT");
+            String rateString = communication.receive();
+            if (rateString == null) {
+                return;
+            }else{
+                rateString = rateString.trim();
+            }
+            try {
+                rate = Integer.parseInt(rateString);
+            } catch (NumberFormatException e) {
+                rate = 0;
+            }
+        } while (rate < 1 || rate > 5);
 
-        communication.send("Insert cleaning");
-        communication.send("PROMPT");
-        String cleaningString = communication.receive();
-        if (cleaningString == null) {
-            return;
-        }
-        try {
-            cleaning = Integer.parseInt(cleaningString);
-        } catch (NumberFormatException e) {
-            communication.send("Invalid cleaning");
-            return;
-        }
+        // Ciclo per cleaning
+        do {
+            communication.send("Insert cleaning (1-5)");
+            communication.send("PROMPT");
+            String cleaningString = communication.receive();
+            if (cleaningString == null) {
+                return;
+            }else{
+                cleaningString = cleaningString.trim();
+            }
+            try {
+                cleaning = Integer.parseInt(cleaningString);
+            } catch (NumberFormatException e) {
+                cleaning = 0;
+            }
+        } while (cleaning < 1 || cleaning > 5);
 
-        communication.send("Insert position");
-        communication.send("PROMPT");
-        String positionString = communication.receive();
-        if (positionString == null) {
-            return;
-        }
-        try {
-            position = Integer.parseInt(cleaningString);
-        } catch (NumberFormatException e) {
-            communication.send("Invalid position");
-            return;
-        }
+        // Ciclo per position
+        do {
+            communication.send("Insert position (1-5)");
+            communication.send("PROMPT");
+            String positionString = communication.receive();
+            if (positionString == null) {
+                return;
+            }else{
+                positionString = positionString.trim();
+            }
+            try {
+                position = Integer.parseInt(positionString);
+            } catch (NumberFormatException e) {
+                position = 0;
+            }
+        } while (position < 1 || position > 5);
 
-        communication.send("Insert services");
-        communication.send("PROMPT");
-        String servicesString = communication.receive();
-        if (servicesString == null) {
-            return;
-        }
-        try {
-            services = Integer.parseInt(cleaningString);
-        } catch (NumberFormatException e) {
-            communication.send("Invalid services");
-            return;
-        }
+        // Ciclo per services
 
-        communication.send("Insert quality");
-        communication.send("PROMPT");
-        String qualityString = communication.receive();
-        if (qualityString == null) {
-            return;
-        }
-        try {
-            quality = Integer.parseInt(cleaningString);
-        } catch (NumberFormatException e) {
-            communication.send("Invalid quality");
-            return;
-        }
+        do {
+            communication.send("Insert services (1-5)");
+            communication.send("PROMPT");
+            String servicesString = communication.receive();
+            if (servicesString == null) {
+                return;
+            }else{
+                servicesString = servicesString.trim();
+            }
+            try {
+                services = Integer.parseInt(servicesString);
+            } catch (NumberFormatException e) {
+                services = 0;
+            }
+        } while (services < 1 || services > 5);
+
+        // Ciclo per quality
+
+        do {
+            communication.send("Insert quality (1-5)");
+            communication.send("PROMPT");
+            String qualityString = communication.receive();
+            if (qualityString == null) {
+                return;
+            }else{
+                qualityString = qualityString.trim();
+            }
+            try {
+                quality = Integer.parseInt(qualityString);
+            } catch (NumberFormatException e) {
+                quality = 0;
+            }
+        } while (quality < 1 || quality > 5);
+
+
+
+        // Ripeti il ciclo do-while per position, services, e quality
 
         ReviewEngine reviewEngine = new ReviewEngine(hotelsPath);
         reviewEngine.addReview(id, rate, cleaning, position, services, quality);
-        reviewEngine.calculateMeanRatesById();
-        reviewEngine.updateHotelFile();
-        communication.send("Review added");      
-        
-        
-        
+        communication.send("Review added");
     }
         
 }

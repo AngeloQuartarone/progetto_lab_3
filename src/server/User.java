@@ -31,7 +31,33 @@ public class User {
     public User(String username, String password) {
         this.username = username;
         this.password = password;
-        this.reviewCount = 0;
+        this.reviewCount = loadReviewCount(username);
+
+    }
+
+    private int loadReviewCount(String username) {
+        List<User> users = getUsersFromFile();
+        for (User user : users) {
+            if (user.username.equals(username)) {
+                return user.reviewCount;
+            }
+        }
+        return 0; // Se l'utente non esiste, ritorna 0
+    }
+
+    private static List<User> getUsersFromFile() {
+        Gson gson = new Gson();
+        try (Reader reader = new FileReader(filePath)) {
+            Type userListType = new TypeToken<ArrayList<User>>() {
+            }.getType();
+            List<User> users = gson.fromJson(reader, userListType);
+            return users != null ? users : new ArrayList<>();
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found. A new file will be created.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new ArrayList<>();
     }
 
     /**
@@ -106,8 +132,6 @@ public class User {
         return false;
     }
 
-
-    
     /**
      * Check if the username exists
      * 
@@ -119,7 +143,8 @@ public class User {
         List<User> users = new ArrayList<>();
 
         try (Reader reader = new FileReader(filePath)) {
-            Type userListType = new TypeToken<ArrayList<User>>() {}.getType();
+            Type userListType = new TypeToken<ArrayList<User>>() {
+            }.getType();
             users = gson.fromJson(reader, userListType);
             if (users == null) {
                 users = new ArrayList<>();
@@ -138,14 +163,14 @@ public class User {
         return false;
     }
 
-
     synchronized public void addReviewCount() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         List<User> users = new ArrayList<>();
         this.reviewCount++; // Incrementa il contatore delle recensioni per l'utente corrente
 
         try (Reader reader = new FileReader(filePath)) {
-            Type userListType = new TypeToken<ArrayList<User>>() {}.getType();
+            Type userListType = new TypeToken<ArrayList<User>>() {
+            }.getType();
             users = gson.fromJson(reader, userListType);
             if (users == null) {
                 users = new ArrayList<>();
@@ -175,5 +200,5 @@ public class User {
     public int getReviewCount() {
         return this.reviewCount;
     }
-    
+
 }
