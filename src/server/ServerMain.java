@@ -20,7 +20,6 @@ public class ServerMain {
     private static String ipAddr = "";
     private static String port = "";
     private static ServerSocket serverSocket = null;
-    // private static Socket clientSocket = null;
     private static ExecutorService executor = null;
 
     /**
@@ -55,11 +54,8 @@ public class ServerMain {
         try {
 
             while (true) {
-                //System.out.println("In attesa di connessioni... Thread: " + Thread.currentThread().getName());
                 System.out.println("[" + Thread.currentThread().getName() + "] - In attesa di connessioni...");
                 Socket clientSocket = serverSocket.accept();
-                //System.out.println("Connessione accettata da: " + clientSocket.getInetAddress().getHostAddress()
-                       // + " - Thread: " + Thread.currentThread().getName());
                 System.out.println("[" + Thread.currentThread().getName() + "] - Connessione accettata da: "
                         + clientSocket.getInetAddress().getHostAddress());
                 SessionManager connection = new SessionManager(clientSocket, hotelsPath);

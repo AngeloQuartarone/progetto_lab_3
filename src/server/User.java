@@ -163,10 +163,10 @@ public class User {
         return false;
     }
 
-    synchronized public void addReviewCount() {
+    synchronized public void addReviewPoints() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         List<User> users = new ArrayList<>();
-        this.reviewCount++; // Incrementa il contatore delle recensioni per l'utente corrente
+        this.reviewCount = this.reviewCount + 25; // Incrementa il contatore delle recensioni per l'utente corrente
 
         try (Reader reader = new FileReader(filePath)) {
             Type userListType = new TypeToken<ArrayList<User>>() {
@@ -199,6 +199,22 @@ public class User {
 
     public int getReviewCount() {
         return this.reviewCount;
+    }
+
+    public String getBadge() {
+        if (this.reviewCount < 0) {
+            return "[internal error]";
+        } else if (this.reviewCount >= 0 && this.reviewCount < 200) {
+            return "Recensore";
+        } else if (this.reviewCount >= 200 && this.reviewCount < 400) {
+            return "Recensore Esperto";
+        } else if (this.reviewCount >= 400 && this.reviewCount < 600) {
+            return "Contributore";
+        } else if (this.reviewCount >= 600 && this.reviewCount < 800) {
+            return "Contributore Esperto";
+        } else {
+            return "Contributore Super";
+        }
     }
 
 }

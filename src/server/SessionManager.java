@@ -69,11 +69,11 @@ public class SessionManager implements Runnable {
                         .send("Benvenuto!\n\n1) Register\n2) Login\n3) Search hotel\n4) Search hotel by city\n5) Exit");
                 communication.send("PROMPT");
                 message = communication.receive();
-                message.trim();
+                message = message.trim();
             } catch (Exception e) {
                 return false;
             }
-            
+
             switch (message) {
                 case "1":
                     registerUser(communication);
@@ -99,7 +99,7 @@ public class SessionManager implements Runnable {
                     "Benvenuto!\n\n1) Search hotel\n2) Search hotel by city\n3) Logout\n4) Review\n5) Badge\n6) Exit");
             communication.send("PROMPT");
             message = communication.receive();
-            message.trim();
+            message = message.trim();
             switch (message) {
                 case "1":
                     searchHotel(communication);
@@ -112,10 +112,11 @@ public class SessionManager implements Runnable {
                     break;
                 case "4":
                     addReview(communication);
-                    actUser.addReviewCount();
+                    actUser.addReviewPoints();
                     break;
                 case "5":
                     // badge(communication);
+                    badge(communication);
                     break;
                 case "6":
                     exit(communication);
@@ -141,7 +142,7 @@ public class SessionManager implements Runnable {
         if (username == null) {
             return;
         } else{
-            username.trim();
+            username = username.trim();
         }
 
         if (User.checkUserName(username)) {
@@ -154,7 +155,7 @@ public class SessionManager implements Runnable {
         if (password == null) {
             return;
         }else{
-            password.trim();
+            password = password.trim();
         }
         User user = new User(username, password);
 
@@ -178,7 +179,7 @@ public class SessionManager implements Runnable {
         if (username == null) {
             return;
         } else{
-            username.trim();
+            username = username.trim();
         }
         communication.send("Insert password");
         communication.send("PROMPT");
@@ -186,7 +187,7 @@ public class SessionManager implements Runnable {
         if (password == null) {
             return;
         }else{
-            password.trim();
+            password = password.trim();
         }
         User user = new User(username, password);
         if (user.checkUser(user)) {
@@ -211,7 +212,7 @@ public class SessionManager implements Runnable {
         if (hotelCity == null) {
             return;
         }else{
-            hotelCity.trim();
+            hotelCity = hotelCity.trim();
         }
 
         if (hotels == null || (hotels.containsKey(hotelCity) == false)) {
@@ -242,7 +243,7 @@ public class SessionManager implements Runnable {
         if (hotelCity == null) {
             return;
         }else{
-            hotelCity.trim();
+            hotelCity = hotelCity.trim();
         }
         communication.send("Insert hotel name");
         communication.send("PROMPT");
@@ -251,7 +252,7 @@ public class SessionManager implements Runnable {
         if (hotelName == null) {
             return;
         }else{
-            hotelName.trim();
+            hotelName = hotelName.trim();
         }
 
         if (hotels == null || (hotels.containsKey(hotelCity) == false)) {
@@ -261,6 +262,7 @@ public class SessionManager implements Runnable {
         String toSend = searchEngine.formatSingleHotel(hotel);
         communication.send(toSend);
     }
+
 
     /**
      * Exit the session
@@ -398,6 +400,13 @@ public class SessionManager implements Runnable {
         ReviewEngine reviewEngine = new ReviewEngine(hotelsPath);
         reviewEngine.addReview(id, rate, cleaning, position, services, quality);
         communication.send("Review added");
+    }
+
+    public void badge(CommunicationManager communication){
+        communication.send("------------------");
+        communication.send("Your current Badge is: " + actUser.getBadge());
+        communication.send("Your current review points is: " + actUser.getReviewCount());
+        communication.send("------------------\n");
     }
         
 }

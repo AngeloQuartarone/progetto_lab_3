@@ -2,16 +2,11 @@
   {
     "username": "angelo",
     "password": "angelo",
-    "reviewCount": 17
+    "reviewCount": 450
   },
   {
     "username": "biagio",
     "password": "biagio",
-    "reviewCount": 1
-  },
-  {
-    "username": "carlo",
-    "password": "romano",
-    "reviewCount": 0
+    "reviewCount": 25
   }
 ]
