@@ -9,6 +9,9 @@ enum State {
     NO_LOGGED, LOGGED
 }
 
+/**
+ * SessionManager class
+ */
 public class SessionManager implements Runnable {
     private Socket socket = null;
     private String hotelsPath = null;
@@ -18,11 +21,20 @@ public class SessionManager implements Runnable {
     private SearchEngine searchEngine = null;
     private User actUser = null;
 
+    /**
+     * Constructor
+     * 
+     * @param s         Socket
+     * @param hotelsP   Hotels path
+     */
     public SessionManager(Socket s, String hotelsP) {
         this.socket = s;
         this.hotelsPath = hotelsP;
     }
 
+    /**
+     * Run method
+     */
     @Override
     public void run() {
         this.searchEngine = new SearchEngine(hotelsPath);
@@ -220,13 +232,11 @@ public class SessionManager implements Runnable {
         }
 
         hotelList = hotels.get(hotelCity);
-        //System.out.println(hotelList);
         if (hotelList == null) {
             communication.send("No hotels found in this city");
             return;
         } else {
            String toSend = searchEngine.formatHotelsList(hotelList);
-            //String toSend = searchEngine.formatHotelsHash(hotels);
             communication.send(toSend);
         }
     }
@@ -279,6 +289,11 @@ public class SessionManager implements Runnable {
         }
     }
 
+    /**
+     * Add a review
+     * 
+     * @param communication
+     */
     public void addReview(CommunicationManager communication){
         int id = 0, rate = 0, cleaning = 0, position = 0, services = 0, quality = 0;
         communication.send("Insert hotel city");
@@ -306,7 +321,6 @@ public class SessionManager implements Runnable {
 
         id = hotel.getId();
 
-        // Ciclo per rate
         do {
             communication.send("Insert rate (1-5)");
             communication.send("PROMPT");
@@ -323,7 +337,6 @@ public class SessionManager implements Runnable {
             }
         } while (rate < 1 || rate > 5);
 
-        // Ciclo per cleaning
         do {
             communication.send("Insert cleaning (1-5)");
             communication.send("PROMPT");
@@ -340,7 +353,6 @@ public class SessionManager implements Runnable {
             }
         } while (cleaning < 1 || cleaning > 5);
 
-        // Ciclo per position
         do {
             communication.send("Insert position (1-5)");
             communication.send("PROMPT");
@@ -356,8 +368,6 @@ public class SessionManager implements Runnable {
                 position = 0;
             }
         } while (position < 1 || position > 5);
-
-        // Ciclo per services
 
         do {
             communication.send("Insert services (1-5)");
@@ -375,8 +385,6 @@ public class SessionManager implements Runnable {
             }
         } while (services < 1 || services > 5);
 
-        // Ciclo per quality
-
         do {
             communication.send("Insert quality (1-5)");
             communication.send("PROMPT");
@@ -392,10 +400,6 @@ public class SessionManager implements Runnable {
                 quality = 0;
             }
         } while (quality < 1 || quality > 5);
-
-
-
-        // Ripeti il ciclo do-while per position, services, e quality
 
         ReviewEngine reviewEngine = new ReviewEngine(hotelsPath);
         reviewEngine.addReview(id, rate, cleaning, position, services, quality);

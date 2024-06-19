@@ -35,6 +35,11 @@ public class User {
 
     }
 
+    /**
+     * Load the review count from the file
+     * @param username
+     * @return
+     */
     private int loadReviewCount(String username) {
         List<User> users = getUsersFromFile();
         for (User user : users) {
@@ -42,9 +47,14 @@ public class User {
                 return user.reviewCount;
             }
         }
-        return 0; // Se l'utente non esiste, ritorna 0
+        return 0;
     }
 
+    /**
+     * Get the list of users from the file
+     * 
+     * @return List of users
+     */
     private static List<User> getUsersFromFile() {
         Gson gson = new Gson();
         try (Reader reader = new FileReader(filePath)) {
@@ -163,10 +173,13 @@ public class User {
         return false;
     }
 
+    /**
+     * Add review points to the user
+     */
     synchronized public void addReviewPoints() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         List<User> users = new ArrayList<>();
-        this.reviewCount = this.reviewCount + 25; // Incrementa il contatore delle recensioni per l'utente corrente
+        this.reviewCount = this.reviewCount + 25;
 
         try (Reader reader = new FileReader(filePath)) {
             Type userListType = new TypeToken<ArrayList<User>>() {
@@ -181,7 +194,6 @@ public class User {
             e.printStackTrace();
         }
 
-        // Trova l'utente corrente nell'elenco e aggiorna il suo reviewCount
         for (User user : users) {
             if (user.username.equals(this.username)) {
                 user.reviewCount = this.reviewCount;
@@ -189,7 +201,6 @@ public class User {
             }
         }
 
-        // Sovrascrivi il file con l'elenco aggiornato degli utenti
         try (Writer writer = new FileWriter(filePath)) {
             gson.toJson(users, writer);
         } catch (IOException e) {
@@ -197,10 +208,20 @@ public class User {
         }
     }
 
+    /**
+     * Get the review count
+     * 
+     * @return Review count
+     */
     public int getReviewCount() {
         return this.reviewCount;
     }
 
+    /**
+     * Get the badge
+     * 
+     * @return Badge
+     */
     public String getBadge() {
         if (this.reviewCount < 0) {
             return "[internal error]";

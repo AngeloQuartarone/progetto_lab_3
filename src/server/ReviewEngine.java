@@ -19,10 +19,18 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * ReviewEngine class
+ */
 public class ReviewEngine {
     private String reviewPath = "./Reviews.json";
     private String hotelPath;
 
+    /**
+     * Constructor
+     * 
+     * @param hotelPath
+     */
     public ReviewEngine(String hotelPath) {
         this.hotelPath = hotelPath;
     }
@@ -80,6 +88,11 @@ public class ReviewEngine {
         }
     }
 
+    /**
+     * Get the reviews from the review file
+     * 
+     * @return ConcurrentHashMap<Integer, List<Review>>
+     */
     synchronized public ConcurrentHashMap<Integer, List<Review>> getReviews() {
         ConcurrentHashMap<Integer, List<Review>> hotelReviews = new ConcurrentHashMap<>();
         File reviewFile = new File(this.reviewPath);
@@ -104,6 +117,12 @@ public class ReviewEngine {
         return hotelReviews;
     }
 
+    /**
+     * Get the reviews for a specific hotel
+     * 
+     * @param hotelIdentifier
+     * @return List<Review>
+     */
     public void calculateMeanRatesById() {
         // Mappa concorrente per memorizzare le recensioni degli hotel
         ConcurrentHashMap<Integer, List<Review>> hotelReviews = new ConcurrentHashMap<>();
@@ -201,7 +220,9 @@ public class ReviewEngine {
         }
     }
     
-
+    /**
+     * Update the hotel file with the latest reviews
+     */
     synchronized public void updateHotelFile() {
         ConcurrentHashMap<Integer, List<Review>> hotelReviews = getReviews(); // Ottieni le recensioni aggiornate
         SearchEngine searchEngine = new SearchEngine(hotelPath);

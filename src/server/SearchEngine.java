@@ -29,10 +29,12 @@ public class SearchEngine {
 
     /**
      * Update the hotel list by city (if is not present yet)
+     * 
      * @param cityFilter
      * @param existingHotels
      */
-    synchronized public void updateHotelListByCity(String cityFilter, ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> existingHotels) {
+    synchronized public void updateHotelListByCity(String cityFilter,
+            ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> existingHotels) {
         int id = 0, rate = 0, c = 0, p = 0, s = 0, q = 0;
         String name = "", description = "", city = "", phone = "";
         ArrayList<String> services = new ArrayList<>();
@@ -40,7 +42,8 @@ public class SearchEngine {
         JsonReader reader = null;
         try {
             reader = new JsonReader(new FileReader(filePath));
-            //System.out.println("Access to hotel file in path in updateHotelListByCity: " + filePath);
+            // System.out.println("Access to hotel file in path in updateHotelListByCity: "
+            // + filePath);
             System.out.println("[" + Thread.currentThread().getName() + "] - Access to hotel file in path" + filePath);
 
             reader.beginArray();
@@ -122,7 +125,11 @@ public class SearchEngine {
         }
     }
 
-
+    /**
+     * Get the hotels from the file
+     * 
+     * @return a ConcurrentHashMap with the hotels
+     */
     synchronized public ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> getHotelsHashMap() {
         ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> existingHotels = new ConcurrentHashMap<>();
         int id = 0, rate = 0, c = 0, p = 0, s = 0, q = 0;
@@ -131,9 +138,9 @@ public class SearchEngine {
         JsonReader reader = null;
         try {
             reader = new JsonReader(new FileReader(filePath));
-            //System.out.println("Access to hotel file in path by getHotelsHashMap: " + filePath);
+            // System.out.println("Access to hotel file in path by getHotelsHashMap: " +
+            // filePath);
             System.out.println("[" + Thread.currentThread().getName() + "] - Access to hotel file in path" + filePath);
-
 
             reader.beginArray();
             while (reader.hasNext()) {
@@ -216,61 +223,64 @@ public class SearchEngine {
         return existingHotels;
     }
 
+    /**
+     * Save the hotels to a file
+     * 
+     * @param hotelsMap the ConcurrentHashMap with the hotels
+     * @param filePath  the path of the file to save
+     */
+    public void saveHotelsHashMap(ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotelsMap, String filePath) {
+        try (JsonWriter writer = new JsonWriter(new FileWriter(filePath))) {
+            writer.beginArray();
+            for (LinkedBlockingQueue<Hotel> hotels : hotelsMap.values()) {
+                for (Hotel hotel : hotels) {
+                    writer.beginObject();
+                    writer.name("id").value(hotel.getId());
+                    writer.name("name").value(hotel.getName());
+                    writer.name("description").value(hotel.getDescription());
+                    writer.name("city").value(hotel.getCity());
+                    writer.name("phone").value(hotel.getPhone());
+                    writer.name("rate").value(hotel.getRate());
 
+                    writer.name("services");
+                    writer.beginArray();
+                    for (String service : hotel.getServices()) {
+                        writer.value(service);
+                    }
+                    writer.endArray();
 
+                    writer.name("ratings");
+                    writer.beginObject();
+                    writer.name("cleaning").value(hotel.getCleaning());
+                    writer.name("position").value(hotel.getPosition());
+                    writer.name("services").value(hotel.getServicesRating());
+                    writer.name("quality").value(hotel.getQuality());
+                    writer.endObject();
 
-
-public void saveHotelsHashMap(ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotelsMap, String filePath) {
-    try (JsonWriter writer = new JsonWriter(new FileWriter(filePath))) {
-        writer.beginArray();
-        for (LinkedBlockingQueue<Hotel> hotels : hotelsMap.values()) {
-            for (Hotel hotel : hotels) {
-                writer.beginObject();
-                writer.name("id").value(hotel.getId());
-                writer.name("name").value(hotel.getName());
-                writer.name("description").value(hotel.getDescription());
-                writer.name("city").value(hotel.getCity());
-                writer.name("phone").value(hotel.getPhone());
-                writer.name("rate").value(hotel.getRate());
-
-                writer.name("services");
-                writer.beginArray();
-                for (String service : hotel.getServices()) {
-                    writer.value(service);
+                    writer.endObject();
                 }
-                writer.endArray();
-
-                writer.name("ratings");
-                writer.beginObject();
-                writer.name("cleaning").value(hotel.getCleaning());
-                writer.name("position").value(hotel.getPosition());
-                writer.name("services").value(hotel.getServicesRating());
-                writer.name("quality").value(hotel.getQuality());
-                writer.endObject();
-
-                writer.endObject();
             }
+            writer.endArray();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        writer.endArray();
-    } catch (IOException e) {
-        e.printStackTrace();
     }
-}
 
     /**
      * Search for a hotel by name
      * 
      * @param cityFilter the city to search in
-     * @param hotelName the name of the hotel to search
-     * @param hotels the ConcurrentHashMap with the hotels
+     * @param hotelName  the name of the hotel to search
+     * @param hotels     the ConcurrentHashMap with the hotels
      * @return the hotel if found, null otherwise
      */
-    synchronized public Hotel searchByHotelName(String cityFilter, String hotelName, ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels) {
+    synchronized public Hotel searchByHotelName(String cityFilter, String hotelName,
+            ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels) {
         Hotel resultHotel = null;
         System.out.println("City: " + cityFilter);
         LinkedBlockingQueue<Hotel> hotelsInCity = hotels.get(cityFilter);
-        //System.out.println(hotelsInCity.toString());
-        
+        // System.out.println(hotelsInCity.toString());
+
         if (hotelsInCity != null) {
             for (Hotel hotel : hotelsInCity) {
                 if (hotel.name.equalsIgnoreCase(hotelName)) {
@@ -287,7 +297,6 @@ public void saveHotelsHashMap(ConcurrentHashMap<String, LinkedBlockingQueue<Hote
         return resultHotel;
     }
 
-
     /**
      * Format the hotels in a readable way
      * 
@@ -300,7 +309,7 @@ public void saveHotelsHashMap(ConcurrentHashMap<String, LinkedBlockingQueue<Hote
         for (Map.Entry<String, LinkedBlockingQueue<Hotel>> entry : hotels.entrySet()) {
             sb.append("City: ").append(entry.getKey()).append("\n");
             for (Hotel hotel : entry.getValue()) {
-                //sb.append("ID: ").append(hotel.id).append("\n");
+                // sb.append("ID: ").append(hotel.id).append("\n");
                 sb.append("Name: ").append(hotel.name).append("\n");
                 sb.append("Description: ").append(hotel.description).append("\n");
                 sb.append("Phone: ").append(hotel.phone).append("\n");
@@ -324,18 +333,24 @@ public void saveHotelsHashMap(ConcurrentHashMap<String, LinkedBlockingQueue<Hote
         return sb.toString();
     }
 
+    /**
+     * Format the hotels list in a readable way
+     * 
+     * @param hotels the LinkedBlockingQueue with the hotels
+     * @return a formatted string with the hotels
+     */
     public String formatHotelsList(LinkedBlockingQueue<Hotel> hotels) {
         StringBuilder sb = new StringBuilder();
         sb.append("\n\n------------------------------\n");
         for (Hotel hotel : hotels) {
-            //sb.append("ID: ").append(hotel.id).append("\n");
+            // sb.append("ID: ").append(hotel.id).append("\n");
             sb.append("Name: ").append(hotel.name).append("\n");
             sb.append("Description: ").append(hotel.description).append("\n");
             sb.append("Phone: ").append(hotel.phone).append("\n");
             sb.append("Services: ");
             for (String service : hotel.services) {
                 sb.append(service).append(", ");
-                //System.out.println(service);
+                // System.out.println(service);
             }
             sb.setLength(sb.length() - 2); // Remove the last comma and space
             sb.append("\n"); // New line after listing services
@@ -362,7 +377,7 @@ public void saveHotelsHashMap(ConcurrentHashMap<String, LinkedBlockingQueue<Hote
         StringBuilder sb = new StringBuilder();
         sb.append("\n\n------------------------------\n");
         if (hotel != null) {
-            //sb.append("ID: ").append(hotel.id).append("\n");
+            // sb.append("ID: ").append(hotel.id).append("\n");
             sb.append("Name: ").append(hotel.name).append("\n");
             sb.append("Description: ").append(hotel.description).append("\n");
             sb.append("City: ").append(hotel.city).append("\n");
@@ -389,9 +404,5 @@ public void saveHotelsHashMap(ConcurrentHashMap<String, LinkedBlockingQueue<Hote
         }
         return sb.toString();
     }
-
-    
-
-
 
 }

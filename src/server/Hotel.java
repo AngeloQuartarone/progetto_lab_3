@@ -37,46 +37,90 @@ public class Hotel {
         this.ratings = new Ratings(cleaning, position, servicesRating, quality);
     }
 
+    /**
+     * Get hotel name
+     * @return Hotel name
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * Get hotel description
+     * @return Hotel description
+     */
     public String getDescription() {
         return this.description;
     }
 
+    /**
+     * Get hotel city
+     * @return Hotel city
+     */
     public String getCity() {
         return this.city;
     }
 
+    /**
+     * Get hotel phone
+     * @return Hotel phone
+     */
     public String getPhone() {
         return this.phone;
     }
 
+    /**
+     * Get hotel services
+     * @return Hotel services
+     */
     public ArrayList<String> getServices() {
         return this.services;
     }
 
+    /**
+     * Get hotel rate
+     * @return Hotel rate
+     */
     public int getRate() {
         return this.rate;
     }
 
+    /**
+     * Get hotel cleaning rating
+     * @return Hotel cleaning rating
+     */
     public int getCleaning() {
         return this.ratings.cleaning;
     }
 
+    /**
+     * Get hotel position rating
+     * @return Hotel position rating
+     */
     public int getPosition() {
         return this.ratings.position;
     }
 
+    /**
+     * Get hotel services rating
+     * @return Hotel services rating
+     */
     public int getServicesRating() {
         return this.ratings.services;
     }
 
+    /**
+     * Get hotel quality rating
+     * @return Hotel quality rating
+     */
     public int getQuality() {
         return this.ratings.quality;
     }
 
+    /**
+     * Get hotel id
+     * @return Hotel id
+     */
     public int getId() {
         return this.id;
     }

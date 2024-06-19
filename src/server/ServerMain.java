@@ -42,13 +42,10 @@ public class ServerMain {
             public void run() {
                 reviewEngine.calculateMeanRatesById();
                 reviewEngine.updateHotelFile();
-                //System.out.println("Azione schedulata eseguita - Thread: " + Thread.currentThread().getName());
                 System.out.println("[" + Thread.currentThread().getName() + "] - Hotel file aggiornato");
             }
         };
 
-        // Pianifica il TimerTask per l'esecuzione periodica ogni minuto (60000
-        // millisecondi)
         timer.scheduleAtFixedRate(task, 0, /*3600000*/30000);
 
         try {
@@ -61,10 +58,8 @@ public class ServerMain {
                 SessionManager connection = new SessionManager(clientSocket, hotelsPath);
 
                 executor.execute(() -> {
-                    //System.out.println("Gestione connessione iniziata - Thread: " + Thread.currentThread().getName());
                     System.out.println("[" + Thread.currentThread().getName() + "] - Gestione connessione iniziata");
                     connection.run();
-                    //System.out.println("Gestione connessione terminata - Thread: " + Thread.currentThread().getName());
                     System.out.println("[" + Thread.currentThread().getName() + "] - Gestione connessione terminata");
                 });
             }
@@ -104,11 +99,7 @@ public class ServerMain {
             ipAddr = prop.getProperty("IP");
             port = prop.getProperty("PORT");
             hotelsPath = prop.getProperty("HOTELSPATH");
-            //System.out.println("Hotels json file path:" + hotelsPath);
             System.out.println("[" + Thread.currentThread().getName() + "] - Server started at IP: " + ipAddr + " Port: " + port);
-        
-            //System.out.println("IP: " + ipAddr);
-            //System.out.println("Port: " + port);
             input.close();
 
         } catch (IOException e) {
@@ -117,14 +108,11 @@ public class ServerMain {
 
         try {
             serverSocket = new ServerSocket(Integer.parseInt(port));
-           //System.out.println("Server started " +" - Thread: " + Thread.currentThread().getName());
         } catch (IOException e) {
             System.out.println(e);
             return;
         }
-
-        // Inizializza l'ExecutorService con un numero fisso di thread.
-        // Ad esempio, crea un pool di thread con 10 thread.
+        
         executor = Executors.newCachedThreadPool();
     }
 
