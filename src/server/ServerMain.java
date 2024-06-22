@@ -47,9 +47,11 @@ public class ServerMain {
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
-                reviewEngine.calculateMeanRatesById();
-                reviewEngine.updateHotelFile();
+                //reviewEngine.calculateMeanRatesById();
+                reviewEngine.updateHotelFile(reviewEngine.calculateMeanRatesById());
+                //reviewEngine.updateReviewsAndHotels();
                 System.out.println("[" + Thread.currentThread().getName() + "] - Hotel file aggiornato");
+
             }
         };
 

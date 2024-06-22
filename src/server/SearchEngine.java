@@ -362,6 +362,7 @@ public class SearchEngine {
             sb.setLength(sb.length() - 2); // Remove the last comma and space
             sb.append("\n"); // New line after listing services
             sb.append("Rate: ").append(hotel.rate).append("\n");
+            sb.append("Reviews number: ").append(hotel.numReviews).append("\n");
             if (hotel.ratings != null) {
                 sb.append("Ratings:\n");
                 sb.append("\tCleaning: ").append(hotel.ratings.cleaning).append("\n");
@@ -398,6 +399,7 @@ public class SearchEngine {
                 sb.setLength(sb.length() - 2);
             }
             sb.append("\nRate: ").append(hotel.rate).append("\n");
+            sb.append("Reviews number: ").append(hotel.numReviews).append("\n");
             if (hotel.ratings != null) {
                 sb.append("Ratings:\n");
                 sb.append("\tCleaning: ").append(hotel.ratings.cleaning).append("\n");
