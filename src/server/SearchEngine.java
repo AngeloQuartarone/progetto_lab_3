@@ -10,6 +10,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import com.google.gson.stream.JsonWriter;
 import java.io.FileWriter;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * SearchEngine class
@@ -346,18 +350,28 @@ public class SearchEngine {
      * @param hotels the LinkedBlockingQueue with the hotels
      * @return a formatted string with the hotels
      */
-    public String formatHotelsList(LinkedBlockingQueue<Hotel> hotels) {
+
+    public String formatHotelsList(LinkedBlockingQueue<Hotel> hotelsQueue) {
+        // Convert LinkedBlockingQueue to List for sorting
+        List<Hotel> hotelsList = hotelsQueue.stream().collect(Collectors.toList());
+
+        // Sort the list based on hotel rate
+        Collections.sort(hotelsList, new Comparator<Hotel>() {
+            @Override
+            public int compare(Hotel h1, Hotel h2) {
+                return Double.compare(h2.rate, h1.rate);
+            }
+        });
+
         StringBuilder sb = new StringBuilder();
         sb.append("\n\n------------------------------\n");
-        for (Hotel hotel : hotels) {
-            // sb.append("ID: ").append(hotel.id).append("\n");
+        for (Hotel hotel : hotelsList) {
             sb.append("Name: ").append(hotel.name).append("\n");
             sb.append("Description: ").append(hotel.description).append("\n");
             sb.append("Phone: ").append(hotel.phone).append("\n");
             sb.append("Services: ");
             for (String service : hotel.services) {
                 sb.append(service).append(", ");
-                // System.out.println(service);
             }
             sb.setLength(sb.length() - 2); // Remove the last comma and space
             sb.append("\n"); // New line after listing services

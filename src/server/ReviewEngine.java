@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -63,7 +62,7 @@ public class ReviewEngine {
         int numReviews = hotelReviews.getOrDefault(hotelIdentifier, new ArrayList<>()).size() + 1;
 
         hotelReviews.computeIfAbsent(hotelIdentifier, k -> new ArrayList<>())
-                .add(new Review(rate, cleaning, position, services, quality, numReviews, timestamp));
+                .add(new Review(rate, cleaning, position, services, quality, timestamp));
 
         try (Writer writer = new FileWriter(this.reviewPath)) {
             new GsonBuilder().setPrettyPrinting().create().toJson(hotelReviews, writer);
@@ -170,7 +169,6 @@ public class ReviewEngine {
                         avgPosition,
                         avgServices,
                         avgQuality,
-                        numReviews,
                         currentDate.format(formatter)
                 ));
                 updatedReviews.put(hotelId, updatedHotelReviews);
@@ -207,7 +205,7 @@ public class ReviewEngine {
                         hotel.ratings.position = review.position;
                         hotel.ratings.services = review.services;
                         hotel.ratings.quality = review.quality;
-                        hotel.numReviews = review.numReviews;
+                        hotel.numReviews = reviews.size();
                     }
                 }
             }
