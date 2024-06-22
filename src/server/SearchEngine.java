@@ -428,4 +428,36 @@ public class SearchEngine {
         return sb.toString();
     }
 
+    // Metodo per ottenere una ConcurrentHashMap con i migliori hotel di ogni città
+    public ConcurrentHashMap<String, Hotel> getBestHotelsMap() {
+        ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = getHotelsHashMap();
+        ConcurrentHashMap<String, Hotel> bestHotels = new ConcurrentHashMap<>();
+        hotels.forEach((city, hotelsInCity) -> {
+            Hotel bestHotel = hotelsInCity.stream().max(Comparator.comparing(Hotel::getRate)).orElse(null);
+            if (bestHotel != null) {
+                bestHotels.put(city, bestHotel);
+            }
+        });
+        return bestHotels;
+    }
+
+    // Metodo che prende in input una ConcurrentHashMap e ritorna una stringa con gli hotel cambiati
+    public String getChangedHotelsString(ConcurrentHashMap<String, Hotel> updatedHotels) {
+        ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> currentHotels = getHotelsHashMap();
+        StringBuilder result = new StringBuilder();
+        updatedHotels.forEach((city, updatedHotel) -> {
+            Hotel currentBestHotel = currentHotels.get(city).stream().max(Comparator.comparing(Hotel::getRate)).orElse(null);
+            if (currentBestHotel == null || !currentBestHotel.equals(updatedHotel)) {
+                result.append("Changed hotel in ")
+                      .append(city)
+                      .append(": ")
+                      .append(updatedHotel.name)
+                      .append(" with rate ")
+                      .append(updatedHotel.rate)
+                      .append("\n");
+            }
+        });
+        return result.toString();
+    }
+
 }

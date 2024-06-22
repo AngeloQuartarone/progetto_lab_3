@@ -59,7 +59,6 @@ public class ReviewEngine {
             }
         }
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        int numReviews = hotelReviews.getOrDefault(hotelIdentifier, new ArrayList<>()).size() + 1;
 
         hotelReviews.computeIfAbsent(hotelIdentifier, k -> new ArrayList<>())
                 .add(new Review(rate, cleaning, position, services, quality, timestamp));
@@ -154,7 +153,6 @@ public class ReviewEngine {
             }
     
             if (totalWeight > 0) {
-                int numReviews = reviews.size();
                 double avgRate = weightedRate / totalWeight;
                 int avgCleaning = (int) (sumCleaning / totalWeight);
                 int avgPosition = (int) (sumPosition / totalWeight);

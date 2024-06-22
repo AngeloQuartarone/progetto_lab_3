@@ -8,8 +8,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.Timer;
 
 /**
@@ -43,13 +45,18 @@ public class ServerMain {
         // Crea un'istanza di Timer
         Timer timer = new Timer();
 
+        
+
+
         // Crea un'istanza di TimerTask
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
-                //reviewEngine.calculateMeanRatesById();
                 reviewEngine.updateHotelFile(reviewEngine.calculateMeanRatesById());
-                //reviewEngine.updateReviewsAndHotels();
+                SearchEngine searchEngine = new SearchEngine(hotelsPath);
+                String x = searchEngine.getChangedHotelsString(searchEngine.getBestHotelsMap());
+                System.out.println("[" + Thread.currentThread().getName() + "] - " + x);
+            
                 System.out.println("[" + Thread.currentThread().getName() + "] - Hotel file aggiornato");
 
             }
