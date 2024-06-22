@@ -29,6 +29,13 @@ public class ServerMain {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
+        if (args.length < 1) {
+            System.out.println("Period not specified. Usage: java -cp bin:lib/gson.jar server.ServerMain <period in milliseconds>");
+            return;
+        }
+
+        long period = Long.parseLong(args[0]); // Converti l'argomento in long
+
         ServerMain server = new ServerMain();
         server.init("./src/server/serverParameter.properties");
         ReviewEngine reviewEngine = new ReviewEngine(hotelsPath);
@@ -46,7 +53,7 @@ public class ServerMain {
             }
         };
 
-        timer.scheduleAtFixedRate(task, 0, /*3600000*/30000);
+        timer.scheduleAtFixedRate(task, 0, period);
 
         try {
 
@@ -63,7 +70,6 @@ public class ServerMain {
                     System.out.println("[" + Thread.currentThread().getName() + "] - Gestione connessione terminata");
                 });
             }
-
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

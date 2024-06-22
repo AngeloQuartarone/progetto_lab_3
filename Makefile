@@ -21,7 +21,7 @@ client:
 	$(JC) $(JFLAGS) $(LIB) $(SRC)/client/*.java -d $(BIN)
 #Esegue il server
 server_run:
-	java $(JFLAGS) $(BIN):$(LIB) server.ServerMain
+	java $(JFLAGS) $(BIN):$(LIB) server.ServerMain 30000
 #Esegue il client
 client_run:
 	java $(JFLAGS) $(BIN):$(LIB) client.ClientMain

@@ -35,7 +35,7 @@ public class SearchEngine {
      */
     synchronized public void updateHotelListByCity(String cityFilter,
             ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> existingHotels) {
-        int id = 0, rate = 0, c = 0, p = 0, s = 0, q = 0;
+        int id = 0, rate = 0, c = 0, p = 0, s = 0, q = 0, numReviews = 0;
         String name = "", description = "", city = "", phone = "";
         ArrayList<String> services = new ArrayList<>();
 
@@ -99,11 +99,14 @@ public class SearchEngine {
                             }
                             reader.endObject();
                             break;
+                        case "numreviews":
+                            numReviews = reader.nextInt();
+                            break;
                     }
                 }
                 reader.endObject();
 
-                Hotel hotel = new Hotel(id, name, description, city, phone, services, rate, c, p, s, q);
+                Hotel hotel = new Hotel(id, name, description, city, phone, services, rate, c, p, s, q, numReviews);
 
                 if (hotel.city.equalsIgnoreCase(cityFilter)) {
                     existingHotels.computeIfAbsent(hotel.city, k -> new LinkedBlockingQueue<>()).add(hotel);
@@ -132,7 +135,7 @@ public class SearchEngine {
      */
     synchronized public ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> getHotelsHashMap() {
         ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> existingHotels = new ConcurrentHashMap<>();
-        int id = 0, rate = 0, c = 0, p = 0, s = 0, q = 0;
+        int id = 0, rate = 0, c = 0, p = 0, s = 0, q = 0, numReviews = 0;
         String name = "", description = "", city = "", phone = "";
 
         JsonReader reader = null;
@@ -196,12 +199,15 @@ public class SearchEngine {
                             }
                             reader.endObject();
                             break;
+                        case "numreviews":
+                            numReviews = reader.nextInt();
+                            break;
                     }
                 }
                 reader.endObject();
 
                 // Crea una nuova istanza di Hotel con la sua lista unica di servizi
-                Hotel hotel = new Hotel(id, name, description, city, phone, services, rate, c, p, s, q);
+                Hotel hotel = new Hotel(id, name, description, city, phone, services, rate, c, p, s, q, numReviews);
 
                 // Aggiunge l'hotel alla mappa existingHotels senza filtrare per città
                 existingHotels.computeIfAbsent(hotel.city, k -> new LinkedBlockingQueue<>()).add(hotel);
@@ -241,6 +247,7 @@ public class SearchEngine {
                     writer.name("city").value(hotel.getCity());
                     writer.name("phone").value(hotel.getPhone());
                     writer.name("rate").value(hotel.getRate());
+                    writer.name("numReviews").value(hotel.getNumReviews());
 
                     writer.name("services");
                     writer.beginArray();

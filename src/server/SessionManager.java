@@ -318,6 +318,11 @@ public class SessionManager implements Runnable {
             searchEngine.updateHotelListByCity(hotelCity, hotels);
         }
         Hotel hotel = searchEngine.searchByHotelName(hotelCity, hotelName, hotels);
+        
+        if(hotel == null){
+            communication.send("Hotel not found");
+            return;
+        }
 
         id = hotel.getId();
 

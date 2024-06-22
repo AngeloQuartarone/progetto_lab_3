@@ -14,6 +14,7 @@ public class Hotel {
     ArrayList<String> services;
     int rate;
     Ratings ratings;
+    int numReviews;
 
     /**
      * Constructor
@@ -26,7 +27,7 @@ public class Hotel {
      * @param rate        Hotel rate
      * @param ratings     Hotel ratings
      */
-    public Hotel(int id, String name, String description, String city, String phone, ArrayList<String> services, int rate, int cleaning, int position, int servicesRating, int quality) {
+    public Hotel(int id, String name, String description, String city, String phone, ArrayList<String> services, int rate, int cleaning, int position, int servicesRating, int quality, int numReviews) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -35,6 +36,7 @@ public class Hotel {
         this.services = services;
         this.rate = rate;
         this.ratings = new Ratings(cleaning, position, servicesRating, quality);
+        this.numReviews = numReviews;
     }
 
     /**
@@ -123,5 +125,13 @@ public class Hotel {
      */
     public int getId() {
         return this.id;
+    }
+
+    /**
+     * Get hotel number of reviews
+     * @return Hotel number of reviews
+     */
+    public int getNumReviews() {
+        return this.numReviews;
     }
 }
