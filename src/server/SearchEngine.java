@@ -433,7 +433,10 @@ public class SearchEngine {
         ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = getHotelsHashMap();
         ConcurrentHashMap<String, Hotel> bestHotels = new ConcurrentHashMap<>();
         hotels.forEach((city, hotelsInCity) -> {
-            Hotel bestHotel = hotelsInCity.stream().max(Comparator.comparing(Hotel::getRate)).orElse(null);
+            Hotel bestHotel = hotelsInCity.stream()
+                .max(Comparator.comparing(Hotel::getRate)
+                .thenComparing(Hotel::getNumReviews))
+                .orElse(null);
             if (bestHotel != null) {
                 bestHotels.put(city, bestHotel);
             }
@@ -442,18 +445,37 @@ public class SearchEngine {
     }
 
     // Metodo che prende in input una ConcurrentHashMap e ritorna una stringa con gli hotel cambiati
-    public String getChangedHotelsString(ConcurrentHashMap<String, Hotel> updatedHotels) {
-        ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> currentHotels = getHotelsHashMap();
+    public String getChangedHotelsString(ConcurrentHashMap<String, Hotel> previousHotels, ConcurrentHashMap<String, Hotel> updatedHotels) {
         StringBuilder result = new StringBuilder();
+        // Controlla gli hotel aggiornati o nuovi
         updatedHotels.forEach((city, updatedHotel) -> {
-            Hotel currentBestHotel = currentHotels.get(city).stream().max(Comparator.comparing(Hotel::getRate)).orElse(null);
-            if (currentBestHotel == null || !currentBestHotel.equals(updatedHotel)) {
-                result.append("Changed hotel in ")
-                      .append(city)
+            Hotel previousHotel = previousHotels.get(city);
+            // Aggiunto controllo per "miglioramento" basato su una proprietà specifica, ad esempio il tasso
+            if (previousHotel == null || !previousHotel.equals(updatedHotel)) {
+                if (previousHotel == null) {
+                    result.append("New hotel in ");
+                } else if (!previousHotel.equals(updatedHotel)) {
+                    result.append("Changed hotel in ");
+                } else {
+                    result.append("Improved hotel in ");
+                }
+                result.append(city)
                       .append(": ")
                       .append(updatedHotel.name)
                       .append(" with rate ")
                       .append(updatedHotel.rate)
+                      .append("\n");
+            }
+        });
+        // Controlla gli hotel rimossi
+        previousHotels.forEach((city, previousHotel) -> {
+            if (!updatedHotels.containsKey(city)) {
+                result.append("Removed hotel in ")
+                      .append(city)
+                      .append(": ")
+                      .append(previousHotel.name)
+                      .append(" with rate ")
+                      .append(previousHotel.rate)
                       .append("\n");
             }
         });

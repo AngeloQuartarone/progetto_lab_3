@@ -24,8 +24,8 @@ public class SessionManager implements Runnable {
     /**
      * Constructor
      * 
-     * @param s         Socket
-     * @param hotelsP   Hotels path
+     * @param s       Socket
+     * @param hotelsP Hotels path
      */
     public SessionManager(Socket s, String hotelsP) {
         this.socket = s;
@@ -81,7 +81,11 @@ public class SessionManager implements Runnable {
                         .send("Benvenuto!\n\n1) Register\n2) Login\n3) Search hotel\n4) Search hotel by city\n5) Exit");
                 communication.send("PROMPT");
                 message = communication.receive();
-                message = message.trim();
+                if (message != null) {
+                    message = message.trim();
+                } else {
+                    return false;
+                }
             } catch (Exception e) {
                 return false;
             }
@@ -111,7 +115,11 @@ public class SessionManager implements Runnable {
                     "Benvenuto!\n\n1) Search hotel\n2) Search hotel by city\n3) Logout\n4) Review\n5) Badge\n6) Exit");
             communication.send("PROMPT");
             message = communication.receive();
-            message = message.trim();
+            if (message != null) {
+                message = message.trim();
+            } else {
+                return false;
+            }
             switch (message) {
                 case "1":
                     searchHotel(communication);
@@ -153,7 +161,7 @@ public class SessionManager implements Runnable {
         String username = communication.receive();
         if (username == null) {
             return;
-        } else{
+        } else {
             username = username.trim();
         }
 
@@ -166,7 +174,7 @@ public class SessionManager implements Runnable {
         String password = communication.receive();
         if (password == null) {
             return;
-        }else{
+        } else {
             password = password.trim();
         }
         User user = new User(username, password);
@@ -190,7 +198,7 @@ public class SessionManager implements Runnable {
         String username = communication.receive();
         if (username == null) {
             return;
-        } else{
+        } else {
             username = username.trim();
         }
         communication.send("Insert password");
@@ -198,7 +206,7 @@ public class SessionManager implements Runnable {
         String password = communication.receive();
         if (password == null) {
             return;
-        }else{
+        } else {
             password = password.trim();
         }
         User user = new User(username, password);
@@ -223,7 +231,7 @@ public class SessionManager implements Runnable {
         String hotelCity = communication.receive();
         if (hotelCity == null) {
             return;
-        }else{
+        } else {
             hotelCity = hotelCity.trim();
         }
 
@@ -236,7 +244,7 @@ public class SessionManager implements Runnable {
             communication.send("No hotels found in this city");
             return;
         } else {
-           String toSend = searchEngine.formatHotelsList(hotelList);
+            String toSend = searchEngine.formatHotelsList(hotelList);
             communication.send(toSend);
         }
     }
@@ -252,7 +260,7 @@ public class SessionManager implements Runnable {
         String hotelCity = communication.receive();
         if (hotelCity == null) {
             return;
-        }else{
+        } else {
             hotelCity = hotelCity.trim();
         }
         communication.send("Insert hotel name");
@@ -261,7 +269,7 @@ public class SessionManager implements Runnable {
 
         if (hotelName == null) {
             return;
-        }else{
+        } else {
             hotelName = hotelName.trim();
         }
 
@@ -272,7 +280,6 @@ public class SessionManager implements Runnable {
         String toSend = searchEngine.formatSingleHotel(hotel);
         communication.send(toSend);
     }
-
 
     /**
      * Exit the session
@@ -294,14 +301,14 @@ public class SessionManager implements Runnable {
      * 
      * @param communication
      */
-    public void addReview(CommunicationManager communication){
+    public void addReview(CommunicationManager communication) {
         int id = 0, rate = 0, cleaning = 0, position = 0, services = 0, quality = 0;
         communication.send("Insert hotel city");
         communication.send("PROMPT");
         String hotelCity = communication.receive();
         if (hotelCity == null) {
             return;
-        }else{
+        } else {
             hotelCity = hotelCity.trim();
         }
         communication.send("Insert hotel name");
@@ -310,7 +317,7 @@ public class SessionManager implements Runnable {
 
         if (hotelName == null) {
             return;
-        }else{
+        } else {
             hotelName = hotelName.trim();
         }
 
@@ -318,8 +325,8 @@ public class SessionManager implements Runnable {
             searchEngine.updateHotelListByCity(hotelCity, hotels);
         }
         Hotel hotel = searchEngine.searchByHotelName(hotelCity, hotelName, hotels);
-        
-        if(hotel == null){
+
+        if (hotel == null) {
             communication.send("Hotel not found");
             return;
         }
@@ -332,7 +339,7 @@ public class SessionManager implements Runnable {
             String rateString = communication.receive();
             if (rateString == null) {
                 return;
-            }else{
+            } else {
                 rateString = rateString.trim();
             }
             try {
@@ -348,7 +355,7 @@ public class SessionManager implements Runnable {
             String cleaningString = communication.receive();
             if (cleaningString == null) {
                 return;
-            }else{
+            } else {
                 cleaningString = cleaningString.trim();
             }
             try {
@@ -364,7 +371,7 @@ public class SessionManager implements Runnable {
             String positionString = communication.receive();
             if (positionString == null) {
                 return;
-            }else{
+            } else {
                 positionString = positionString.trim();
             }
             try {
@@ -380,7 +387,7 @@ public class SessionManager implements Runnable {
             String servicesString = communication.receive();
             if (servicesString == null) {
                 return;
-            }else{
+            } else {
                 servicesString = servicesString.trim();
             }
             try {
@@ -396,7 +403,7 @@ public class SessionManager implements Runnable {
             String qualityString = communication.receive();
             if (qualityString == null) {
                 return;
-            }else{
+            } else {
                 qualityString = qualityString.trim();
             }
             try {
@@ -411,11 +418,11 @@ public class SessionManager implements Runnable {
         communication.send("Review added");
     }
 
-    public void badge(CommunicationManager communication){
+    public void badge(CommunicationManager communication) {
         communication.send("------------------");
         communication.send("Your current Badge is: " + actUser.getBadge());
         communication.send("Your current review points is: " + actUser.getReviewCount());
         communication.send("------------------\n");
     }
-        
+
 }

@@ -134,4 +134,8 @@ public class Hotel {
     public int getNumReviews() {
         return this.numReviews;
     }
+
+    public boolean equals(Hotel hotel) {
+        return this.id == hotel.id;
+    }
 }

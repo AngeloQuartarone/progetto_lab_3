@@ -7,12 +7,9 @@ import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Properties;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.Timer;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * ServerMain class
@@ -20,7 +17,8 @@ import java.util.Timer;
 public class ServerMain {
     private static String hotelsPath = "";
     private static String ipAddr = "";
-    private static String port = "";
+    private static String tcpPort = "";
+    private static String udpPort = "";
     private static ServerSocket serverSocket = null;
     private static ExecutorService executor = null;
 
@@ -32,7 +30,8 @@ public class ServerMain {
      */
     public static void main(String[] args) throws Exception {
         if (args.length < 1) {
-            System.out.println("Period not specified. Usage: java -cp bin:lib/gson.jar server.ServerMain <period in milliseconds>");
+            System.out.println(
+                    "Period not specified. Usage: java -cp bin:lib/gson.jar server.ServerMain <period in milliseconds>");
             return;
         }
 
@@ -40,13 +39,10 @@ public class ServerMain {
 
         ServerMain server = new ServerMain();
         server.init("./src/server/serverParameter.properties");
-        ReviewEngine reviewEngine = new ReviewEngine(hotelsPath);
+        /*ReviewEngine reviewEngine = new ReviewEngine(hotelsPath);
 
         // Crea un'istanza di Timer
         Timer timer = new Timer();
-
-        
-
 
         // Crea un'istanza di TimerTask
         TimerTask task = new TimerTask() {
@@ -56,13 +52,19 @@ public class ServerMain {
                 SearchEngine searchEngine = new SearchEngine(hotelsPath);
                 String x = searchEngine.getChangedHotelsString(searchEngine.getBestHotelsMap());
                 System.out.println("[" + Thread.currentThread().getName() + "] - " + x);
-            
+
                 System.out.println("[" + Thread.currentThread().getName() + "] - Hotel file aggiornato");
 
             }
         };
 
-        timer.scheduleAtFixedRate(task, 0, period);
+        timer.scheduleAtFixedRate(task, 0, period);*/
+
+        ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+        Runnable scheduledTask = new ScheduledTask(hotelsPath, Integer.parseInt(udpPort));
+        //((ScheduledTask) scheduledTask).init();
+
+        scheduledExecutorService.scheduleAtFixedRate(scheduledTask, period, period, java.util.concurrent.TimeUnit.MILLISECONDS);
 
         try {
 
@@ -112,9 +114,11 @@ public class ServerMain {
         try {
             prop.load(input);
             ipAddr = prop.getProperty("IP");
-            port = prop.getProperty("PORT");
+            tcpPort = prop.getProperty("TCP_PORT");
+            udpPort = prop.getProperty("UDP_PORT");
             hotelsPath = prop.getProperty("HOTELSPATH");
-            System.out.println("[" + Thread.currentThread().getName() + "] - Server started at IP: " + ipAddr + " Port: " + port);
+            System.out.println(
+                    "[" + Thread.currentThread().getName() + "] - Server started at IP: " + ipAddr + " Port: " + tcpPort);
             input.close();
 
         } catch (IOException e) {
@@ -122,12 +126,12 @@ public class ServerMain {
         }
 
         try {
-            serverSocket = new ServerSocket(Integer.parseInt(port));
+            serverSocket = new ServerSocket(Integer.parseInt(tcpPort));
         } catch (IOException e) {
             System.out.println(e);
             return;
         }
-        
+
         executor = Executors.newCachedThreadPool();
     }
 

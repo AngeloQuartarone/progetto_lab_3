@@ -8,6 +8,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Properties;
 
@@ -16,7 +19,9 @@ import java.util.Properties;
  */
 public class HOTELIERCustomerClient {
     private String ipAddr = "";
-    private String port = "";
+    private String tcpPort = "";
+    private String udpPort = "";
+    private int port = 0;
     private Socket socket = null;
 
     /**
@@ -45,7 +50,8 @@ public class HOTELIERCustomerClient {
             prop.load(fileInput);
 
             ipAddr = prop.getProperty("SERVER_IP");
-            port = prop.getProperty("SERVER_PORT");
+            tcpPort = prop.getProperty("SERVER_TCP_PORT");
+            udpPort = prop.getProperty("SERVER_UDP_PORT");
             System.out.println(ipAddr);
             System.out.println(port);
             fileInput.close();
@@ -55,7 +61,7 @@ public class HOTELIERCustomerClient {
         }
 
         try {
-            socket = new Socket(ipAddr, Integer.parseInt(port));
+            socket = new Socket(ipAddr, Integer.parseInt(tcpPort));
             System.out.println("Connected");
 
         } catch (IOException e) {
@@ -68,6 +74,30 @@ public class HOTELIERCustomerClient {
      * Run the CLI for the client
      */
     public void runCLI() {
+        // Creazione e avvio del thread per l'ascolto UDP
+        new Thread(() -> {
+            DatagramSocket datagramSocket = null;
+            try {
+                datagramSocket = new DatagramSocket(null);
+                datagramSocket.setReuseAddress(true);
+                datagramSocket.bind(new InetSocketAddress(Integer.parseInt(udpPort)));
+                byte[] receiveBuffer = new byte[1024];
+                DatagramPacket receivePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
+                while (true) {
+                    datagramSocket.receive(receivePacket);
+                    String received = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                    System.out.println(received);
+                }
+            } catch (IOException e) {
+                System.out.println("Errore ascolto UDP: " + e.getMessage());
+            } finally {
+                if (datagramSocket != null && !datagramSocket.isClosed()) {
+                    datagramSocket.close();
+                }
+            }
+        }).start();
+
+        // Continuazione della normale esecuzione per la comunicazione TCP
         BufferedReader keyboardInput = null;
         DataInputStream in = null;
         DataOutputStream out = null;
@@ -94,7 +124,7 @@ public class HOTELIERCustomerClient {
             do {
                 received = communication.receive();
                 if (received == null) {
-                    System.out.println("[RECEIVED NULL] An error occurred. Exiting...");
+                    System.out.println("[RECEIVED NULL]An error occurred. Exiting...");
                     break; // Uscire dal ciclo se il server si disconnette inattesamente
                 } else {
                     if (!received.equals("PROMPT")) {
@@ -111,12 +141,15 @@ public class HOTELIERCustomerClient {
         } catch (IOException e) {
             System.out.println(e);
         } finally {
-            // Chiudi tutte le risorse nel blocco finally per assicurarti che vengano sempre chiuse correttamente
             try {
-                if (keyboardInput != null) keyboardInput.close();
-                if (in != null) in.close();
-                if (out != null) out.close();
-                if (socket != null) socket.close();
+                if (keyboardInput != null)
+                    keyboardInput.close();
+                if (in != null)
+                    in.close();
+                if (out != null)
+                    out.close();
+                if (socket != null)
+                    socket.close();
             } catch (IOException e) {
                 System.out.println("Error closing resources: " + e);
             }
