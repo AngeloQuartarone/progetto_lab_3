@@ -40,30 +40,9 @@ public class ServerMain {
 
         ServerMain server = new ServerMain();
         server.init("./src/server/serverParameter.properties");
-        /*ReviewEngine reviewEngine = new ReviewEngine(hotelsPath);
-
-        // Crea un'istanza di Timer
-        Timer timer = new Timer();
-
-        // Crea un'istanza di TimerTask
-        TimerTask task = new TimerTask() {
-            @Override
-            public void run() {
-                reviewEngine.updateHotelFile(reviewEngine.calculateMeanRatesById());
-                SearchEngine searchEngine = new SearchEngine(hotelsPath);
-                String x = searchEngine.getChangedHotelsString(searchEngine.getBestHotelsMap());
-                System.out.println("[" + Thread.currentThread().getName() + "] - " + x);
-
-                System.out.println("[" + Thread.currentThread().getName() + "] - Hotel file aggiornato");
-
-            }
-        };
-
-        timer.scheduleAtFixedRate(task, 0, period);*/
-
+        
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
         Runnable scheduledTask = new ScheduledTask(hotelsPath, Integer.parseInt(udpPort), udpIp);
-        //((ScheduledTask) scheduledTask).init();
 
         scheduledExecutorService.scheduleAtFixedRate(scheduledTask, 0, period, java.util.concurrent.TimeUnit.MILLISECONDS);
 
