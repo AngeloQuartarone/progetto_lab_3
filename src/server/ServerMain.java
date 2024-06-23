@@ -19,6 +19,7 @@ public class ServerMain {
     private static String ipAddr = "";
     private static String tcpPort = "";
     private static String udpPort = "";
+    private static String udpIp = "";
     private static ServerSocket serverSocket = null;
     private static ExecutorService executor = null;
 
@@ -61,10 +62,10 @@ public class ServerMain {
         timer.scheduleAtFixedRate(task, 0, period);*/
 
         ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
-        Runnable scheduledTask = new ScheduledTask(hotelsPath, Integer.parseInt(udpPort));
+        Runnable scheduledTask = new ScheduledTask(hotelsPath, Integer.parseInt(udpPort), udpIp);
         //((ScheduledTask) scheduledTask).init();
 
-        scheduledExecutorService.scheduleAtFixedRate(scheduledTask, period, period, java.util.concurrent.TimeUnit.MILLISECONDS);
+        scheduledExecutorService.scheduleAtFixedRate(scheduledTask, 0, period, java.util.concurrent.TimeUnit.MILLISECONDS);
 
         try {
 
@@ -117,6 +118,7 @@ public class ServerMain {
             tcpPort = prop.getProperty("TCP_PORT");
             udpPort = prop.getProperty("UDP_PORT");
             hotelsPath = prop.getProperty("HOTELSPATH");
+            udpIp = prop.getProperty("MULTI_IP");
             System.out.println(
                     "[" + Thread.currentThread().getName() + "] - Server started at IP: " + ipAddr + " Port: " + tcpPort);
             input.close();

@@ -288,9 +288,7 @@ public class SearchEngine {
     synchronized public Hotel searchByHotelName(String cityFilter, String hotelName,
             ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels) {
         Hotel resultHotel = null;
-        System.out.println("City: " + cityFilter);
         LinkedBlockingQueue<Hotel> hotelsInCity = hotels.get(cityFilter);
-        // System.out.println(hotelsInCity.toString());
 
         if (hotelsInCity != null) {
             for (Hotel hotel : hotelsInCity) {
@@ -320,7 +318,6 @@ public class SearchEngine {
         for (Map.Entry<String, LinkedBlockingQueue<Hotel>> entry : hotels.entrySet()) {
             sb.append("City: ").append(entry.getKey()).append("\n");
             for (Hotel hotel : entry.getValue()) {
-                // sb.append("ID: ").append(hotel.id).append("\n");
                 sb.append("Name: ").append(hotel.name).append("\n");
                 sb.append("Description: ").append(hotel.description).append("\n");
                 sb.append("Phone: ").append(hotel.phone).append("\n");
@@ -328,8 +325,8 @@ public class SearchEngine {
                 for (String service : hotel.services) {
                     sb.append(service).append(", ");
                 }
-                sb.setLength(sb.length() - 2); // Rimuove l'ultima virgola e spazio
-                sb.append("\n"); // Per andare a capo dopo l'elenco dei servizi
+                sb.setLength(sb.length() - 2);
+                sb.append("\n");
                 sb.append("Rate: ").append(hotel.rate).append("\n");
                 if (hotel.ratings != null) {
                     sb.append("Ratings:\n");
@@ -338,7 +335,7 @@ public class SearchEngine {
                     sb.append("\tServices: ").append(hotel.ratings.services).append("\n");
                     sb.append("\tQuality: ").append(hotel.ratings.quality).append("\n");
                 }
-                sb.append("------------------------------\n"); // Separatore per migliorare la leggibilità
+                sb.append("------------------------------\n");
             }
         }
         return sb.toString();
@@ -352,10 +349,8 @@ public class SearchEngine {
      */
 
     public String formatHotelsList(LinkedBlockingQueue<Hotel> hotelsQueue) {
-        // Convert LinkedBlockingQueue to List for sorting
         List<Hotel> hotelsList = hotelsQueue.stream().collect(Collectors.toList());
 
-        // Sort the list based on hotel rate
         Collections.sort(hotelsList, new Comparator<Hotel>() {
             @Override
             public int compare(Hotel h1, Hotel h2) {
@@ -373,8 +368,8 @@ public class SearchEngine {
             for (String service : hotel.services) {
                 sb.append(service).append(", ");
             }
-            sb.setLength(sb.length() - 2); // Remove the last comma and space
-            sb.append("\n"); // New line after listing services
+            sb.setLength(sb.length() - 2);
+            sb.append("\n");
             sb.append("Rate: ").append(hotel.rate).append("\n");
             sb.append("Reviews number: ").append(hotel.numReviews).append("\n");
             if (hotel.ratings != null) {
@@ -384,7 +379,7 @@ public class SearchEngine {
                 sb.append("\tServices: ").append(hotel.ratings.services).append("\n");
                 sb.append("\tQuality: ").append(hotel.ratings.quality).append("\n");
             }
-            sb.append("------------------------------\n"); // Separator for readability
+            sb.append("------------------------------\n");
         }
         return sb.toString();
     }
@@ -399,7 +394,6 @@ public class SearchEngine {
         StringBuilder sb = new StringBuilder();
         sb.append("\n\n------------------------------\n");
         if (hotel != null) {
-            // sb.append("ID: ").append(hotel.id).append("\n");
             sb.append("Name: ").append(hotel.name).append("\n");
             sb.append("Description: ").append(hotel.description).append("\n");
             sb.append("City: ").append(hotel.city).append("\n");
@@ -408,7 +402,6 @@ public class SearchEngine {
             for (String service : hotel.services) {
                 sb.append(service).append(", ");
             }
-            // Remove the last comma and space
             if (!hotel.services.isEmpty()) {
                 sb.setLength(sb.length() - 2);
             }
@@ -421,14 +414,13 @@ public class SearchEngine {
                 sb.append("\tServices: ").append(hotel.ratings.services).append("\n");
                 sb.append("\tQuality: ").append(hotel.ratings.quality).append("\n");
             }
-            sb.append("------------------------------\n"); // Separator for readability
+            sb.append("------------------------------\n");
         } else {
             sb.append("No hotel information available.");
         }
         return sb.toString();
     }
 
-    // Metodo per ottenere una ConcurrentHashMap con i migliori hotel di ogni città
     public ConcurrentHashMap<String, Hotel> getBestHotelsMap() {
         ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = getHotelsHashMap();
         ConcurrentHashMap<String, Hotel> bestHotels = new ConcurrentHashMap<>();
@@ -444,13 +436,10 @@ public class SearchEngine {
         return bestHotels;
     }
 
-    // Metodo che prende in input una ConcurrentHashMap e ritorna una stringa con gli hotel cambiati
     public String getChangedHotelsString(ConcurrentHashMap<String, Hotel> previousHotels, ConcurrentHashMap<String, Hotel> updatedHotels) {
         StringBuilder result = new StringBuilder();
-        // Controlla gli hotel aggiornati o nuovi
         updatedHotels.forEach((city, updatedHotel) -> {
             Hotel previousHotel = previousHotels.get(city);
-            // Aggiunto controllo per "miglioramento" basato su una proprietà specifica, ad esempio il tasso
             if (previousHotel == null || !previousHotel.equals(updatedHotel)) {
                 if (previousHotel == null) {
                     result.append("New hotel in ");
@@ -467,7 +456,6 @@ public class SearchEngine {
                       .append("\n");
             }
         });
-        // Controlla gli hotel rimossi
         previousHotels.forEach((city, previousHotel) -> {
             if (!updatedHotels.containsKey(city)) {
                 result.append("Removed hotel in ")
