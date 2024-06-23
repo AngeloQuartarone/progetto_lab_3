@@ -1,9 +1,0 @@
-{
-    "java.project.sourcePaths": [
-        ".",
-        "src"
-    ],
-    "java.project.referencedLibraries": [
-        "/Users/angeloquartarone/Universita/Laboratorio3/progetto/lib/gson.jar"
-    ]
-}
