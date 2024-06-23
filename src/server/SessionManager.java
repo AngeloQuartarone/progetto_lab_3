@@ -96,7 +96,6 @@ public class SessionManager implements Runnable {
                     break;
                 case "2":
                     loginUser(communication);
-
                     break;
                 case "3":
                     searchHotel(communication);
@@ -113,7 +112,8 @@ public class SessionManager implements Runnable {
             }
         } else if (actualState == State.LOGGED) {
             communication.send(
-                    "\n--------------------\nWelcome Back "+ actUser.getUsername() +"!\n\n1) Search hotel\n2) Search hotel by city\n3) Logout\n4) Review\n5) Badge\n6) Exit");
+                    "\n--------------------\nWelcome Back " + actUser.getUsername()
+                            + "!\n\n1) Search hotel\n2) Search hotel by city\n3) Logout\n4) Review\n5) Badge\n6) Exit");
             communication.send("PROMPT");
             message = communication.receive();
             if (message != null) {
@@ -211,7 +211,7 @@ public class SessionManager implements Runnable {
         }
         User user = new User(username, password);
         if (user.checkUser(user)) {
-            //communication.send("User logged in");
+            // communication.send("User logged in");
             communication.send("LOGIN");
             actualState = State.LOGGED;
             actUser = user;
@@ -417,6 +417,7 @@ public class SessionManager implements Runnable {
         ReviewEngine reviewEngine = new ReviewEngine(hotelsPath);
         reviewEngine.addReview(id, rate, cleaning, position, services, quality);
         communication.send("Review added");
+        hotels.clear();
     }
 
     public void badge(CommunicationManager communication) {

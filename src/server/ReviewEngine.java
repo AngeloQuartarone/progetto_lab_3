@@ -110,7 +110,6 @@ public class ReviewEngine {
         File reviewFile = new File(reviewPath);
     
         if (!reviewFile.exists()) {
-            System.out.println("File does not exist.");
             return null;
         }
     

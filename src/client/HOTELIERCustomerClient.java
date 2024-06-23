@@ -21,7 +21,6 @@ public class HOTELIERCustomerClient {
     private String ipAddr = "";
     private String tcpPort = "";
     private String udpPort = "";
-    private int port = 0;
     private String udpIp = "";
     private Socket socket = null;
 
@@ -52,10 +51,8 @@ public class HOTELIERCustomerClient {
 
             ipAddr = prop.getProperty("SERVER_IP");
             tcpPort = prop.getProperty("SERVER_TCP_PORT");
-            udpPort = prop.getProperty("SERVER_UDP_PORT");
             udpIp = prop.getProperty("SERVER_MULTI");
-            System.out.println(ipAddr);
-            System.out.println(port);
+            udpPort = prop.getProperty("SERVER_UDP_PORT");
             fileInput.close();
 
         } catch (IOException e) {
@@ -64,7 +61,6 @@ public class HOTELIERCustomerClient {
 
         try {
             socket = new Socket(ipAddr, Integer.parseInt(tcpPort));
-            System.out.println("Connected");
 
         } catch (IOException e) {
             System.out.println(e);

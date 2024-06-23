@@ -444,7 +444,7 @@ public class SearchEngine {
                 if (previousHotel == null) {
                     result.append("New hotel in ");
                 } else if (!previousHotel.equals(updatedHotel)) {
-                    result.append("Changed hotel in ");
+                    result.append("Changed best hotel in ");
                 } else {
                     result.append("Improved hotel in ");
                 }
