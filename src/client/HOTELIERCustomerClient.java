@@ -150,6 +150,13 @@ public class HOTELIERCustomerClient {
         }
     }
 
+
+    /**
+     * Start the multicast listener
+     * 
+     * @param udpIp   the IP address of the multicast group
+     * @param udpPort the port of the multicast group
+     */
     @SuppressWarnings("deprecation")
     public void startMulticastListener(String udpIp, String udpPort) {
         new Thread(() -> {
@@ -186,6 +193,10 @@ public class HOTELIERCustomerClient {
         }).start();
     }
 
+
+    /**
+     * Print the received messages
+     */
     public void printReceivedMessages() {
         synchronized (receivedMessages) {
             for (String message : receivedMessages) {

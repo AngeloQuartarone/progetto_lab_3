@@ -232,7 +232,7 @@ public class SearchEngine {
      * @param hotelsMap the ConcurrentHashMap with the hotels
      * @param filePath  the path of the file to save
      */
-    public void saveHotelsHashMap(ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotelsMap, String filePath) {
+    synchronized public void saveHotelsHashMap(ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotelsMap, String filePath) {
         try (JsonWriter writer = new JsonWriter(new FileWriter(filePath))) {
             writer.beginArray();
             for (LinkedBlockingQueue<Hotel> hotels : hotelsMap.values()) {
@@ -414,6 +414,11 @@ public class SearchEngine {
         return sb.toString();
     }
 
+    /**
+     * Get the best hotels in each city
+     * 
+     * @return a ConcurrentHashMap with the best hotels
+     */
     public ConcurrentHashMap<String, Hotel> getBestHotelsMap() {
         ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = getHotelsHashMap();
         ConcurrentHashMap<String, Hotel> bestHotels = new ConcurrentHashMap<>();
@@ -429,6 +434,13 @@ public class SearchEngine {
         return bestHotels;
     }
 
+    /**
+     * Get the changed hotels
+     * 
+     * @param previousHotels the previous hotels
+     * @param updatedHotels  the updated hotels
+     * @return a string with the changed hotels
+     */
     public String getChangedHotelsString(ConcurrentHashMap<String, Hotel> previousHotels, ConcurrentHashMap<String, Hotel> updatedHotels) {
         StringBuilder result = new StringBuilder();
         updatedHotels.forEach((city, updatedHotel) -> {

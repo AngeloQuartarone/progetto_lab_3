@@ -31,30 +31,51 @@ class Review {
         this.timeStamp = timeStamp;
     }
 
+    /*
+     * Get the rate
+     */
     public int getRate() {
         return rate;
     }
 
+    /*
+     * Get the cleaning
+     */
     public int getCleaning() {
         return cleaning;
     }
 
+    /*
+     * Get the position
+     */
     public int getPosition() {
         return position;
     }
 
+    /*
+     * Get the services
+     */
     public int getServices() {
         return services;
     }
 
+    /*
+     * Get the quality
+     */
     public int getQuality() {
         return quality;
     }
 
+    /*
+     * Get the number of reviews
+     */
     public int getNumReviews() {
         return numReviews;
     }
 
+    /*
+     * Get the time stamp
+     */
     public String getTimeStamp() {
         return timeStamp;
     }

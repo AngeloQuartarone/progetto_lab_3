@@ -424,6 +424,11 @@ public class SessionManager implements Runnable {
         hotels.clear();
     }
 
+    /**
+     * Show the badge
+     * 
+     * @param communication
+     */
     public void badge(CommunicationManager communication) {
         communication.send("------------------");
         communication.send("Your current Badge is: " + actUser.getBadge());

@@ -79,11 +79,9 @@ public class ReviewEngine {
         ConcurrentHashMap<Integer, List<Review>> hotelReviews = new ConcurrentHashMap<>();
         File reviewFile = new File(this.reviewPath);
 
-        // Verifica l'esistenza del file e lo crea se non esiste
         if (!reviewFile.exists()) {
             return null;
         } else {
-            // Caricamento delle recensioni esistenti
             try (FileReader fileReader = new FileReader(reviewFile); JsonReader reader = new JsonReader(fileReader)) {
                 Type reviewMapType = new TypeToken<ConcurrentHashMap<Integer, List<Review>>>() {
                 }.getType();
@@ -128,7 +126,6 @@ public class ReviewEngine {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime currentDate = LocalDateTime.now();
     
-        // Creazione di un nuovo ConcurrentHashMap per le recensioni aggiornate
         ConcurrentHashMap<Integer, List<Review>> updatedReviews = new ConcurrentHashMap<>();
     
         hotelReviews.forEach((hotelId, reviews) -> {
@@ -158,7 +155,6 @@ public class ReviewEngine {
                 int avgServices = (int) (sumServices / totalWeight);
                 int avgQuality = (int) (sumQuality / totalWeight);
     
-                // Aggiungi le recensioni aggiornate a updatedReviews mantenendo quelle esistenti
                 List<Review> updatedHotelReviews = new ArrayList<>(reviews);
                 updatedHotelReviews.set(0, new Review(
                         (int) avgRate,
@@ -170,7 +166,6 @@ public class ReviewEngine {
                 ));
                 updatedReviews.put(hotelId, updatedHotelReviews);
             } else {
-                // Se non ci sono recensioni valide, mantieni le recensioni esistenti
                 updatedReviews.put(hotelId, reviews);
             }
         });

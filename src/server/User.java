@@ -238,6 +238,11 @@ public class User {
         }
     }
 
+    /**
+     * Get the username
+     * 
+     * @return Username
+     */
     public String getUsername() {
         return this.username;
     }

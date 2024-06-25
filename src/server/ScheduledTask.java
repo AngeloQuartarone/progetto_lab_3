@@ -5,6 +5,9 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
+/**
+ * ScheduledTask class
+ */
 public class ScheduledTask implements Runnable {
     private SearchEngine searchEngine = null;
     private ReviewEngine reviewEngine = null;
@@ -12,6 +15,13 @@ public class ScheduledTask implements Runnable {
     private int udpPort = 0;
     private String udpIp = "";
 
+    /**
+     * Constructor
+     * 
+     * @param hotelsPath the path of the hotels file
+     * @param udpPort    the UDP port
+     * @param udpIp      the UDP IP
+     */
     public ScheduledTask(String hotelsPath, int udpPort, String udpIp) {
         this.searchEngine = new SearchEngine(hotelsPath);
         this.reviewEngine = new ReviewEngine(hotelsPath);
@@ -20,6 +30,9 @@ public class ScheduledTask implements Runnable {
         this.udpIp = udpIp;
     }
 
+    /**
+     * Run the task
+     */
     @SuppressWarnings("deprecation")
     public void run() {
         try {
