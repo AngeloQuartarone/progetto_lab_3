@@ -286,21 +286,7 @@ public class SessionManager implements Runnable {
         communication.send(toSend);
     }
 
-    /**
-     * Exit the session
-     * 
-     * @param communication
-     */
-    private void exit(CommunicationManager communication) {
-        try {
-            communication.send("Goodbye!");
-            communication.send("EXIT");
-            socket.close();
-        } catch (IOException e) {
-            System.err.println("Error closing socket: " + e.getMessage());
-        }
-    }
-
+    
     /**
      * Add a review
      * 
@@ -319,25 +305,25 @@ public class SessionManager implements Runnable {
         communication.send("Insert hotel name");
         communication.send("PROMPT");
         String hotelName = communication.receive();
-
+        
         if (hotelName == null) {
             return;
         } else {
             hotelName = hotelName.trim();
         }
-
+        
         if (hotels == null || !hotels.containsKey(hotelCity)) {
             searchEngine.updateHotelListByCity(hotelCity, hotels);
         }
         Hotel hotel = searchEngine.searchByHotelName(hotelCity, hotelName, hotels);
-
+        
         if (hotel == null) {
             communication.send("\nHotel not found\n");
             return;
         }
-
+        
         id = hotel.getId();
-
+        
         do {
             communication.send("Insert rate (1-5)");
             communication.send("PROMPT");
@@ -353,7 +339,7 @@ public class SessionManager implements Runnable {
                 rate = 0;
             }
         } while (rate < 1 || rate > 5);
-
+        
         do {
             communication.send("Insert cleaning (1-5)");
             communication.send("PROMPT");
@@ -369,7 +355,7 @@ public class SessionManager implements Runnable {
                 cleaning = 0;
             }
         } while (cleaning < 1 || cleaning > 5);
-
+        
         do {
             communication.send("Insert position (1-5)");
             communication.send("PROMPT");
@@ -385,7 +371,7 @@ public class SessionManager implements Runnable {
                 position = 0;
             }
         } while (position < 1 || position > 5);
-
+        
         do {
             communication.send("Insert services (1-5)");
             communication.send("PROMPT");
@@ -401,7 +387,7 @@ public class SessionManager implements Runnable {
                 services = 0;
             }
         } while (services < 1 || services > 5);
-
+        
         do {
             communication.send("Insert quality (1-5)");
             communication.send("PROMPT");
@@ -417,13 +403,13 @@ public class SessionManager implements Runnable {
                 quality = 0;
             }
         } while (quality < 1 || quality > 5);
-
+        
         ReviewEngine reviewEngine = new ReviewEngine(hotelsPath);
         reviewEngine.addReview(id, rate, cleaning, position, services, quality);
         communication.send("Review added");
         hotels.clear();
     }
-
+    
     /**
      * Show the badge
      * 
@@ -436,4 +422,18 @@ public class SessionManager implements Runnable {
         communication.send("------------------\n");
     }
 
+    /**
+     * Exit the session
+     * 
+     * @param communication
+     */
+    private void exit(CommunicationManager communication) {
+        try {
+            communication.send("Goodbye!");
+            communication.send("EXIT");
+            socket.close();
+        } catch (IOException e) {
+            System.err.println("Error closing socket: " + e.getMessage());
+        }
+    }
 }
