@@ -46,8 +46,6 @@ public class SearchEngine {
         JsonReader reader = null;
         try {
             reader = new JsonReader(new FileReader(filePath));
-            // System.out.println("Access to hotel file in path in updateHotelListByCity: "
-            // + filePath);
             System.out.println("[" + Thread.currentThread().getName() + "] - Access to hotel file in path" + filePath);
 
             reader.beginArray();
@@ -145,14 +143,12 @@ public class SearchEngine {
         JsonReader reader = null;
         try {
             reader = new JsonReader(new FileReader(filePath));
-            // System.out.println("Access to hotel file in path by getHotelsHashMap: " +
-            // filePath);
             System.out.println("[" + Thread.currentThread().getName() + "] - Access to hotel file in path" + filePath);
 
             reader.beginArray();
             while (reader.hasNext()) {
                 reader.beginObject();
-                ArrayList<String> services = new ArrayList<>(); // Inizializza una nuova lista di servizi per ogni hotel
+                ArrayList<String> services = new ArrayList<>();
                 while (reader.hasNext()) {
                     String key = reader.nextName();
                     switch (key.toLowerCase()) {
@@ -172,7 +168,6 @@ public class SearchEngine {
                             phone = reader.nextString().toLowerCase();
                             break;
                         case "services":
-                            // Non è più necessario chiamare services.clear()
                             reader.beginArray();
                             while (reader.hasNext()) {
                                 services.add(reader.nextString().toLowerCase());
@@ -210,10 +205,8 @@ public class SearchEngine {
                 }
                 reader.endObject();
 
-                // Crea una nuova istanza di Hotel con la sua lista unica di servizi
                 Hotel hotel = new Hotel(id, name, description, city, phone, services, rate, c, p, s, q, numReviews);
 
-                // Aggiunge l'hotel alla mappa existingHotels senza filtrare per città
                 existingHotels.computeIfAbsent(hotel.city, k -> new LinkedBlockingQueue<>()).add(hotel);
             }
             reader.endArray();
@@ -445,26 +438,12 @@ public class SearchEngine {
                     result.append("New hotel in ");
                 } else if (!previousHotel.equals(updatedHotel)) {
                     result.append("Changed best hotel in ");
-                } else {
-                    result.append("Improved hotel in ");
                 }
                 result.append(city)
                       .append(": ")
                       .append(updatedHotel.name)
                       .append(" with rate ")
-                      .append(updatedHotel.rate)
-                      .append("\n");
-            }
-        });
-        previousHotels.forEach((city, previousHotel) -> {
-            if (!updatedHotels.containsKey(city)) {
-                result.append("Removed hotel in ")
-                      .append(city)
-                      .append(": ")
-                      .append(previousHotel.name)
-                      .append(" with rate ")
-                      .append(previousHotel.rate)
-                      .append("\n");
+                      .append(updatedHotel.rate);
             }
         });
         return result.toString();

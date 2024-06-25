@@ -30,7 +30,7 @@ public class CommunicationManager {
         try {
             out.writeUTF(message);
         } catch (IOException e) {
-            e.printStackTrace();
+            return;
         }
     }
 

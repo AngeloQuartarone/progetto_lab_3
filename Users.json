@@ -2,7 +2,7 @@
   {
     "username": "angelo",
     "password": "angelo",
-    "reviewCount": 3450
+    "reviewCount": 4150
   },
   {
     "username": "biagio",
@@ -12,6 +12,11 @@
   {
     "username": "bello",
     "password": "bello",
+    "reviewCount": 0
+  },
+  {
+    "username": "\\0",
+    "password": "NO",
     "reviewCount": 0
   }
 ]

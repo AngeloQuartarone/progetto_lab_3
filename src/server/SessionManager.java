@@ -111,11 +111,16 @@ public class SessionManager implements Runnable {
                     break;
             }
         } else if (actualState == State.LOGGED) {
-            communication.send(
-                    "\n--------------------\nWelcome Back " + actUser.getUsername()
-                            + "!\n\n1) Search hotel\n2) Search hotel by city\n3) Logout\n4) Review\n5) Badge\n6) Exit");
-            communication.send("PROMPT");
-            message = communication.receive();
+            try {
+                communication.send("UDP");
+                communication.send(
+                        "\n--------------------\nWelcome Back " + actUser.getUsername()
+                                + "!\n\n1) Search hotel\n2) Search hotel by city\n3) Logout\n4) Review\n5) Badge\n6) Exit");
+                communication.send("PROMPT");
+                message = communication.receive();
+            } catch (Exception e) {
+                return false;
+            }
             if (message != null) {
                 message = message.trim();
             } else {
@@ -211,7 +216,6 @@ public class SessionManager implements Runnable {
         }
         User user = new User(username, password);
         if (user.checkUser(user)) {
-            // communication.send("User logged in");
             communication.send("LOGIN");
             actualState = State.LOGGED;
             actUser = user;
@@ -328,7 +332,7 @@ public class SessionManager implements Runnable {
         Hotel hotel = searchEngine.searchByHotelName(hotelCity, hotelName, hotels);
 
         if (hotel == null) {
-            communication.send("Hotel not found");
+            communication.send("\nHotel not found\n");
             return;
         }
 

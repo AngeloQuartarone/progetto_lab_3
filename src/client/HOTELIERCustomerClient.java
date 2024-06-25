@@ -12,6 +12,8 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -23,6 +25,7 @@ public class HOTELIERCustomerClient {
     private String udpPort = "";
     private String udpIp = "";
     private Socket socket = null;
+    private List<String> receivedMessages = new ArrayList<>();
 
     /**
      * Constructor
@@ -97,18 +100,28 @@ public class HOTELIERCustomerClient {
 
         try {
             do {
+
                 received = communication.receive();
                 if (received == null) {
                     System.out.println("[RECEIVED NULL]An error occurred. Exiting...");
-                    break; // Uscire dal ciclo se il server si disconnette inattesamente
+                    break;
                 } else {
                     if (received.equals("LOGIN")) {
                         startMulticastListener(udpIp, udpPort);
                         continue;
                     }
 
+                    if (received.equals("UDP")) {
+                        printReceivedMessages();
+                        continue;
+                    }
+
+                    
+
                     if (!received.equals("PROMPT")) {
+                        
                         System.out.println(received);
+
                     } else {
                         System.out.print("-> ");
                         while ((toSend = keyboardInput.readLine()) == null || toSend.trim().isEmpty()) {
@@ -120,6 +133,7 @@ public class HOTELIERCustomerClient {
             } while (!received.equals("EXIT"));
         } catch (IOException e) {
             System.out.println(e);
+
         } finally {
             try {
                 if (keyboardInput != null)
@@ -150,7 +164,9 @@ public class HOTELIERCustomerClient {
                     multicastSocket.receive(receivePacket);
                     String received = new String(receivePacket.getData(), 0, receivePacket.getLength());
                     if (received != null && !received.isEmpty()) {
-                        System.out.println("\n\n" + received + "\n\n");
+                        synchronized (receivedMessages) {
+                            receivedMessages.add(received);
+                        }
                     }
                 }
             } catch (IOException e) {
@@ -168,6 +184,15 @@ public class HOTELIERCustomerClient {
                 }
             }
         }).start();
+    }
+
+    public void printReceivedMessages() {
+        synchronized (receivedMessages) {
+            for (String message : receivedMessages) {
+                System.out.println(message);
+            }
+            receivedMessages.clear(); // Clear the list after printing if desired
+        }
     }
 
 }

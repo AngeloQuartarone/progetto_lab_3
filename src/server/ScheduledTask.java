@@ -6,7 +6,6 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 
 public class ScheduledTask implements Runnable {
-    // private String hotelsPath = "";
     private SearchEngine searchEngine = null;
     private ReviewEngine reviewEngine = null;
     private ConcurrentHashMap<String, Hotel> oldHotelsMap = null;
@@ -28,16 +27,15 @@ public class ScheduledTask implements Runnable {
             ConcurrentHashMap<String, Hotel> newHotelsMap = searchEngine.getBestHotelsMap();
             String toSend = searchEngine.getChangedHotelsString(oldHotelsMap, newHotelsMap);
 
-            // Prepara il messaggio UDP per il multicast
             byte[] message = toSend.getBytes();
-            InetAddress multicastAddress = InetAddress.getByName(this.udpIp); // Indirizzo IP di multicast
+            InetAddress multicastAddress = InetAddress.getByName(this.udpIp);
             DatagramPacket packet = new DatagramPacket(message, message.length, multicastAddress, udpPort);
 
             try (MulticastSocket socket = new MulticastSocket()) {
-                socket.joinGroup(multicastAddress); // Unisciti al gruppo multicast
-                socket.send(packet); // Invia il messaggio in multicast
+                socket.joinGroup(multicastAddress);
+                socket.send(packet);
                 System.out.println("[" + Thread.currentThread().getName() + "] - Messaggio UDP inviato in multicast");
-                socket.leaveGroup(multicastAddress); // Esci dal gruppo multicast
+                socket.leaveGroup(multicastAddress);
             }
 
             oldHotelsMap = newHotelsMap;
