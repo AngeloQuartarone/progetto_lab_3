@@ -37,7 +37,7 @@ public class SearchEngine {
      * @param cityFilter
      * @param existingHotels
      */
-    synchronized public void updateHotelListByCity(String cityFilter,
+    public void updateHotelListByCity(String cityFilter,
             ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> existingHotels) {
         int id = 0, rate = 0, c = 0, p = 0, s = 0, q = 0, numReviews = 0;
         String name = "", description = "", city = "", phone = "";
@@ -111,7 +111,9 @@ public class SearchEngine {
                 Hotel hotel = new Hotel(id, name, description, city, phone, services, rate, c, p, s, q, numReviews);
 
                 if (hotel.city.equalsIgnoreCase(cityFilter)) {
-                    existingHotels.computeIfAbsent(hotel.city, k -> new LinkedBlockingQueue<>()).add(hotel);
+                    synchronized (existingHotels) {
+                        existingHotels.computeIfAbsent(hotel.city, k -> new LinkedBlockingQueue<>()).add(hotel);
+                    }
                 }
             }
             reader.endArray();
@@ -135,7 +137,7 @@ public class SearchEngine {
      * 
      * @return a ConcurrentHashMap with the hotels
      */
-    synchronized public ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> getHotelsHashMap() {
+    public ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> getHotelsHashMap() {
         ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> existingHotels = new ConcurrentHashMap<>();
         int id = 0, rate = 0, c = 0, p = 0, s = 0, q = 0, numReviews = 0;
         String name = "", description = "", city = "", phone = "";
@@ -207,7 +209,9 @@ public class SearchEngine {
 
                 Hotel hotel = new Hotel(id, name, description, city, phone, services, rate, c, p, s, q, numReviews);
 
-                existingHotels.computeIfAbsent(hotel.city, k -> new LinkedBlockingQueue<>()).add(hotel);
+                synchronized (existingHotels) {
+                    existingHotels.computeIfAbsent(hotel.city, k -> new LinkedBlockingQueue<>()).add(hotel);
+                }
             }
             reader.endArray();
         } catch (FileNotFoundException e) {
@@ -232,41 +236,43 @@ public class SearchEngine {
      * @param hotelsMap the ConcurrentHashMap with the hotels
      * @param filePath  the path of the file to save
      */
-    synchronized public void saveHotelsHashMap(ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotelsMap, String filePath) {
-        try (JsonWriter writer = new JsonWriter(new FileWriter(filePath))) {
-            writer.beginArray();
-            for (LinkedBlockingQueue<Hotel> hotels : hotelsMap.values()) {
-                for (Hotel hotel : hotels) {
-                    writer.beginObject();
-                    writer.name("id").value(hotel.getId());
-                    writer.name("name").value(hotel.getName());
-                    writer.name("description").value(hotel.getDescription());
-                    writer.name("city").value(hotel.getCity());
-                    writer.name("phone").value(hotel.getPhone());
-                    writer.name("rate").value(hotel.getRate());
-                    writer.name("numReviews").value(hotel.getNumReviews());
+    public void saveHotelsHashMap(ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotelsMap, String filePath) {
+        synchronized (hotelsMap) {
+            try (JsonWriter writer = new JsonWriter(new FileWriter(filePath))) {
+                writer.beginArray();
+                for (LinkedBlockingQueue<Hotel> hotels : hotelsMap.values()) {
+                    for (Hotel hotel : hotels) {
+                        writer.beginObject();
+                        writer.name("id").value(hotel.getId());
+                        writer.name("name").value(hotel.getName());
+                        writer.name("description").value(hotel.getDescription());
+                        writer.name("city").value(hotel.getCity());
+                        writer.name("phone").value(hotel.getPhone());
+                        writer.name("rate").value(hotel.getRate());
+                        writer.name("numReviews").value(hotel.getNumReviews());
 
-                    writer.name("services");
-                    writer.beginArray();
-                    for (String service : hotel.getServices()) {
-                        writer.value(service);
+                        writer.name("services");
+                        writer.beginArray();
+                        for (String service : hotel.getServices()) {
+                            writer.value(service);
+                        }
+                        writer.endArray();
+
+                        writer.name("ratings");
+                        writer.beginObject();
+                        writer.name("cleaning").value(hotel.getCleaning());
+                        writer.name("position").value(hotel.getPosition());
+                        writer.name("services").value(hotel.getServicesRating());
+                        writer.name("quality").value(hotel.getQuality());
+                        writer.endObject();
+
+                        writer.endObject();
                     }
-                    writer.endArray();
-
-                    writer.name("ratings");
-                    writer.beginObject();
-                    writer.name("cleaning").value(hotel.getCleaning());
-                    writer.name("position").value(hotel.getPosition());
-                    writer.name("services").value(hotel.getServicesRating());
-                    writer.name("quality").value(hotel.getQuality());
-                    writer.endObject();
-
-                    writer.endObject();
                 }
+                writer.endArray();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            writer.endArray();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -278,20 +284,22 @@ public class SearchEngine {
      * @param hotels     the ConcurrentHashMap with the hotels
      * @return the hotel if found, null otherwise
      */
-    synchronized public Hotel searchByHotelName(String cityFilter, String hotelName,
+    public Hotel searchByHotelName(String cityFilter, String hotelName,
             ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels) {
         Hotel resultHotel = null;
         LinkedBlockingQueue<Hotel> hotelsInCity = hotels.get(cityFilter);
 
         if (hotelsInCity != null) {
-            for (Hotel hotel : hotelsInCity) {
-                if (hotel.name.equalsIgnoreCase(hotelName)) {
-                    resultHotel = hotel;
-                    break;
+            synchronized (hotelsInCity) {
+                for (Hotel hotel : hotelsInCity) {
+                    if (hotel.name.equalsIgnoreCase(hotelName)) {
+                        resultHotel = hotel;
+                        break;
+                    }
                 }
-            }
-            if (resultHotel == null) {
-                System.out.println("Hotel named " + hotelName + " not found in " + cityFilter);
+                if (resultHotel == null) {
+                    System.out.println("Hotel named " + hotelName + " not found in " + cityFilter);
+                }
             }
         } else {
             System.out.println("No hotels found in the specified city: " + cityFilter);
@@ -308,27 +316,31 @@ public class SearchEngine {
     public String formatHotelsHash(ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels) {
         StringBuilder sb = new StringBuilder();
         sb.append("\n\n------------------------------\n");
-        for (Map.Entry<String, LinkedBlockingQueue<Hotel>> entry : hotels.entrySet()) {
-            sb.append("City: ").append(entry.getKey()).append("\n");
-            for (Hotel hotel : entry.getValue()) {
-                sb.append("Name: ").append(hotel.name).append("\n");
-                sb.append("Description: ").append(hotel.description).append("\n");
-                sb.append("Phone: ").append(hotel.phone).append("\n");
-                sb.append("Services: ");
-                for (String service : hotel.services) {
-                    sb.append(service).append(", ");
+        synchronized (hotels) {
+            for (Map.Entry<String, LinkedBlockingQueue<Hotel>> entry : hotels.entrySet()) {
+                sb.append("City: ").append(entry.getKey()).append("\n");
+                synchronized (entry.getValue()) {
+                    for (Hotel hotel : entry.getValue()) {
+                        sb.append("Name: ").append(hotel.name).append("\n");
+                        sb.append("Description: ").append(hotel.description).append("\n");
+                        sb.append("Phone: ").append(hotel.phone).append("\n");
+                        sb.append("Services: ");
+                        for (String service : hotel.services) {
+                            sb.append(service).append(", ");
+                        }
+                        sb.setLength(sb.length() - 2);
+                        sb.append("\n");
+                        sb.append("Rate: ").append(hotel.rate).append("\n");
+                        if (hotel.ratings != null) {
+                            sb.append("Ratings:\n");
+                            sb.append("\tCleaning: ").append(hotel.ratings.cleaning).append("\n");
+                            sb.append("\tPosition: ").append(hotel.ratings.position).append("\n");
+                            sb.append("\tServices: ").append(hotel.ratings.services).append("\n");
+                            sb.append("\tQuality: ").append(hotel.ratings.quality).append("\n");
+                        }
+                        sb.append("------------------------------\n");
+                    }
                 }
-                sb.setLength(sb.length() - 2);
-                sb.append("\n");
-                sb.append("Rate: ").append(hotel.rate).append("\n");
-                if (hotel.ratings != null) {
-                    sb.append("Ratings:\n");
-                    sb.append("\tCleaning: ").append(hotel.ratings.cleaning).append("\n");
-                    sb.append("\tPosition: ").append(hotel.ratings.position).append("\n");
-                    sb.append("\tServices: ").append(hotel.ratings.services).append("\n");
-                    sb.append("\tQuality: ").append(hotel.ratings.quality).append("\n");
-                }
-                sb.append("------------------------------\n");
             }
         }
         return sb.toString();
@@ -342,7 +354,10 @@ public class SearchEngine {
      */
 
     public String formatHotelsList(LinkedBlockingQueue<Hotel> hotelsQueue) {
-        List<Hotel> hotelsList = hotelsQueue.stream().collect(Collectors.toList());
+        List<Hotel> hotelsList;
+        synchronized (hotelsQueue) {
+            hotelsList = hotelsQueue.stream().collect(Collectors.toList());
+        }
 
         Collections.sort(hotelsList, new Comparator<Hotel>() {
             @Override
@@ -423,10 +438,13 @@ public class SearchEngine {
         ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = getHotelsHashMap();
         ConcurrentHashMap<String, Hotel> bestHotels = new ConcurrentHashMap<>();
         hotels.forEach((city, hotelsInCity) -> {
-            Hotel bestHotel = hotelsInCity.stream()
-                .max(Comparator.comparing(Hotel::getRate)
-                .thenComparing(Hotel::getNumReviews))
-                .orElse(null);
+            Hotel bestHotel;
+            synchronized (hotelsInCity) {
+                bestHotel = hotelsInCity.stream()
+                    .max(Comparator.comparing(Hotel::getRate)
+                    .thenComparing(Hotel::getNumReviews))
+                    .orElse(null);
+            }
             if (bestHotel != null) {
                 bestHotels.put(city, bestHotel);
             }
@@ -444,7 +462,10 @@ public class SearchEngine {
     public String getChangedHotelsString(ConcurrentHashMap<String, Hotel> previousHotels, ConcurrentHashMap<String, Hotel> updatedHotels) {
         StringBuilder result = new StringBuilder();
         updatedHotels.forEach((city, updatedHotel) -> {
-            Hotel previousHotel = previousHotels.get(city);
+            Hotel previousHotel;
+            synchronized (previousHotels) {
+                previousHotel = previousHotels.get(city);
+            }
             if (previousHotel == null || !previousHotel.equals(updatedHotel)) {
                 if (previousHotel == null) {
                     result.append("New hotel in ");

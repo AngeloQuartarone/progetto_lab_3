@@ -37,6 +37,7 @@ public class User {
 
     /**
      * Load the review count from the file
+     * 
      * @param username
      * @return
      */
@@ -85,29 +86,31 @@ public class User {
      * 
      * @param newUser
      */
-    synchronized public void insertUser(User newUser) {
+    public void insertUser(User newUser) {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         List<User> users = new ArrayList<>();
 
-        try (Reader reader = new FileReader(filePath)) {
-            Type userListType = new TypeToken<ArrayList<User>>() {
-            }.getType();
-            users = gson.fromJson(reader, userListType);
-        } catch (FileNotFoundException e) {
-            System.out.println("File not found. A new file will be created.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        synchronized (User.class) {
+            try (Reader reader = new FileReader(filePath)) {
+                Type userListType = new TypeToken<ArrayList<User>>() {
+                }.getType();
+                users = gson.fromJson(reader, userListType);
+            } catch (FileNotFoundException e) {
+                System.out.println("File not found. A new file will be created.");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-        if (users == null) {
-            users = new ArrayList<>();
-        }
-        users.add(newUser);
+            if (users == null) {
+                users = new ArrayList<>();
+            }
+            users.add(newUser);
 
-        try (Writer writer = new FileWriter(filePath)) {
-            gson.toJson(users, writer);
-        } catch (IOException e) {
-            e.printStackTrace();
+            try (Writer writer = new FileWriter(filePath)) {
+                gson.toJson(users, writer);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -117,21 +120,23 @@ public class User {
      * @param user
      * @return true if the user is already in the list, false otherwise
      */
-    synchronized public boolean checkUser(User userToCheck) {
+    public boolean checkUser(User userToCheck) {
         Gson gson = new Gson();
         List<User> users = new ArrayList<>();
 
-        try (Reader reader = new FileReader(filePath)) {
-            Type userListType = new TypeToken<ArrayList<User>>() {
-            }.getType();
-            users = gson.fromJson(reader, userListType);
-            if (users == null) {
-                users = new ArrayList<>();
+        synchronized (User.class) {
+            try (Reader reader = new FileReader(filePath)) {
+                Type userListType = new TypeToken<ArrayList<User>>() {
+                }.getType();
+                users = gson.fromJson(reader, userListType);
+                if (users == null) {
+                    users = new ArrayList<>();
+                }
+            } catch (FileNotFoundException e) {
+                return false;
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (FileNotFoundException e) {
-            return false;
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
         for (User u : users) {
@@ -148,21 +153,23 @@ public class User {
      * @param user
      * @return true if the username is already in the list, false otherwise
      */
-    synchronized static public boolean checkUserName(String usernameToCheck) {
+    public static boolean checkUserName(String usernameToCheck) {
         Gson gson = new Gson();
         List<User> users = new ArrayList<>();
 
-        try (Reader reader = new FileReader(filePath)) {
-            Type userListType = new TypeToken<ArrayList<User>>() {
-            }.getType();
-            users = gson.fromJson(reader, userListType);
-            if (users == null) {
-                users = new ArrayList<>();
+        synchronized (User.class) {
+            try (Reader reader = new FileReader(filePath)) {
+                Type userListType = new TypeToken<ArrayList<User>>() {
+                }.getType();
+                users = gson.fromJson(reader, userListType);
+                if (users == null) {
+                    users = new ArrayList<>();
+                }
+            } catch (FileNotFoundException e) {
+                return false;
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (FileNotFoundException e) {
-            return false;
-        } catch (IOException e) {
-            e.printStackTrace();
         }
 
         for (User u : users) {
@@ -176,35 +183,37 @@ public class User {
     /**
      * Add review points to the user
      */
-    synchronized public void addReviewPoints() {
+    public void addReviewPoints() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         List<User> users = new ArrayList<>();
         this.reviewCount = this.reviewCount + 25;
 
-        try (Reader reader = new FileReader(filePath)) {
-            Type userListType = new TypeToken<ArrayList<User>>() {
-            }.getType();
-            users = gson.fromJson(reader, userListType);
-            if (users == null) {
-                users = new ArrayList<>();
+        synchronized (User.class) {
+            try (Reader reader = new FileReader(filePath)) {
+                Type userListType = new TypeToken<ArrayList<User>>() {
+                }.getType();
+                users = gson.fromJson(reader, userListType);
+                if (users == null) {
+                    users = new ArrayList<>();
+                }
+            } catch (FileNotFoundException e) {
+                System.out.println("File not found. A new file will be created.");
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (FileNotFoundException e) {
-            System.out.println("File not found. A new file will be created.");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-        for (User user : users) {
-            if (user.username.equals(this.username)) {
-                user.reviewCount = this.reviewCount;
-                break;
+            for (User user : users) {
+                if (user.username.equals(this.username)) {
+                    user.reviewCount = this.reviewCount;
+                    break;
+                }
             }
-        }
 
-        try (Writer writer = new FileWriter(filePath)) {
-            gson.toJson(users, writer);
-        } catch (IOException e) {
-            e.printStackTrace();
+            try (Writer writer = new FileWriter(filePath)) {
+                gson.toJson(users, writer);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 

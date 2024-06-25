@@ -34,39 +34,42 @@ public class ReviewEngine {
         this.hotelPath = hotelPath;
     }
 
-    synchronized public void addReview(int hotelIdentifier, int rate, int cleaning, int position, int services,
-            int quality) {
+    public void addReview(int hotelIdentifier, int rate, int cleaning, int position, int services, int quality) {
         ConcurrentHashMap<Integer, List<Review>> hotelReviews = new ConcurrentHashMap<>();
         File reviewFile = new File(this.reviewPath);
 
-        if (!reviewFile.exists()) {
-            try {
-                reviewFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return;
-            }
-        } else {
-            try (FileReader fileReader = new FileReader(reviewFile); JsonReader reader = new JsonReader(fileReader)) {
-                Type reviewMapType = new TypeToken<ConcurrentHashMap<Integer, List<Review>>>() {
-                }.getType();
-                hotelReviews = new Gson().fromJson(reader, reviewMapType);
-                if (hotelReviews == null) {
-                    hotelReviews = new ConcurrentHashMap<>();
+        synchronized (this) {
+            if (!reviewFile.exists()) {
+                try {
+                    reviewFile.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return;
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+            } else {
+                try (FileReader fileReader = new FileReader(reviewFile); JsonReader reader = new JsonReader(fileReader)) {
+                    Type reviewMapType = new TypeToken<ConcurrentHashMap<Integer, List<Review>>>() {}.getType();
+                    hotelReviews = new Gson().fromJson(reader, reviewMapType);
+                    if (hotelReviews == null) {
+                        hotelReviews = new ConcurrentHashMap<>();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
+
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
         hotelReviews.computeIfAbsent(hotelIdentifier, k -> new ArrayList<>())
-                .add(new Review(rate, cleaning, position, services, quality, timestamp));
+            .add(new Review(rate, cleaning, position, services, quality, timestamp));
 
-        try (Writer writer = new FileWriter(this.reviewPath)) {
-            new GsonBuilder().setPrettyPrinting().create().toJson(hotelReviews, writer);
-        } catch (IOException e) {
-            e.printStackTrace();
+        synchronized (this) {
+            try (Writer writer = new FileWriter(this.reviewPath)) {
+                new GsonBuilder().setPrettyPrinting().create().toJson(hotelReviews, writer);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -75,22 +78,23 @@ public class ReviewEngine {
      * 
      * @return
      */
-    synchronized public ConcurrentHashMap<Integer, List<Review>> getReviews() {
+    public ConcurrentHashMap<Integer, List<Review>> getReviews() {
         ConcurrentHashMap<Integer, List<Review>> hotelReviews = new ConcurrentHashMap<>();
         File reviewFile = new File(this.reviewPath);
 
         if (!reviewFile.exists()) {
             return null;
         } else {
-            try (FileReader fileReader = new FileReader(reviewFile); JsonReader reader = new JsonReader(fileReader)) {
-                Type reviewMapType = new TypeToken<ConcurrentHashMap<Integer, List<Review>>>() {
-                }.getType();
-                hotelReviews = new Gson().fromJson(reader, reviewMapType);
-                if (hotelReviews == null) {
-                    hotelReviews = new ConcurrentHashMap<>();
+            synchronized (this) {
+                try (FileReader fileReader = new FileReader(reviewFile); JsonReader reader = new JsonReader(fileReader)) {
+                    Type reviewMapType = new TypeToken<ConcurrentHashMap<Integer, List<Review>>>() {}.getType();
+                    hotelReviews = new Gson().fromJson(reader, reviewMapType);
+                    if (hotelReviews == null) {
+                        hotelReviews = new ConcurrentHashMap<>();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
 
@@ -103,43 +107,45 @@ public class ReviewEngine {
      * @param hotelId
      * @return
      */
-    synchronized public ConcurrentHashMap<Integer, List<Review>> calculateMeanRatesById() {
+    public ConcurrentHashMap<Integer, List<Review>> calculateMeanRatesById() {
         ConcurrentHashMap<Integer, List<Review>> hotelReviews = new ConcurrentHashMap<>();
         File reviewFile = new File(reviewPath);
-    
+
         if (!reviewFile.exists()) {
             return null;
         }
-    
-        try (FileReader fileReader = new FileReader(reviewFile); JsonReader reader = new JsonReader(fileReader)) {
-            Type reviewMapType = new TypeToken<ConcurrentHashMap<Integer, List<Review>>>() {}.getType();
-            hotelReviews = new Gson().fromJson(reader, reviewMapType);
-            if (hotelReviews == null) {
-                System.out.println("No reviews to calculate.");
+
+        synchronized (this) {
+            try (FileReader fileReader = new FileReader(reviewFile); JsonReader reader = new JsonReader(fileReader)) {
+                Type reviewMapType = new TypeToken<ConcurrentHashMap<Integer, List<Review>>>() {}.getType();
+                hotelReviews = new Gson().fromJson(reader, reviewMapType);
+                if (hotelReviews == null) {
+                    System.out.println("No reviews to calculate.");
+                    return null;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
                 return null;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
         }
-    
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime currentDate = LocalDateTime.now();
-    
+
         ConcurrentHashMap<Integer, List<Review>> updatedReviews = new ConcurrentHashMap<>();
-    
+
         hotelReviews.forEach((hotelId, reviews) -> {
             if (reviews.isEmpty()) return;
-    
+
             double weightedRate = 0, sumCleaning = 0, sumPosition = 0, sumServices = 0, sumQuality = 0, totalWeight = 0;
             double reviewCountWeight = Math.log1p(reviews.size());
-    
+
             for (Review review : reviews) {
                 LocalDateTime reviewDate = LocalDateTime.parse(review.timeStamp, formatter);
                 long daysBetween = ChronoUnit.DAYS.between(reviewDate, currentDate);
                 double recencyWeight = Math.max(0, 30 - daysBetween) / 30.0;
                 double weight = recencyWeight * reviewCountWeight;
-    
+
                 weightedRate += review.rate * weight;
                 sumCleaning += review.cleaning * weight;
                 sumPosition += review.position * weight;
@@ -147,43 +153,43 @@ public class ReviewEngine {
                 sumQuality += review.quality * weight;
                 totalWeight += weight;
             }
-    
+
             if (totalWeight > 0) {
                 double avgRate = weightedRate / totalWeight;
                 int avgCleaning = (int) (sumCleaning / totalWeight);
                 int avgPosition = (int) (sumPosition / totalWeight);
                 int avgServices = (int) (sumServices / totalWeight);
                 int avgQuality = (int) (sumQuality / totalWeight);
-    
+
                 List<Review> updatedHotelReviews = new ArrayList<>(reviews);
                 updatedHotelReviews.set(0, new Review(
-                        (int) avgRate,
-                        avgCleaning,
-                        avgPosition,
-                        avgServices,
-                        avgQuality,
-                        currentDate.format(formatter)
+                    (int) avgRate,
+                    avgCleaning,
+                    avgPosition,
+                    avgServices,
+                    avgQuality,
+                    currentDate.format(formatter)
                 ));
                 updatedReviews.put(hotelId, updatedHotelReviews);
             } else {
                 updatedReviews.put(hotelId, reviews);
             }
         });
-    
+
         return updatedReviews;
     }
-    
+
     /**
      * Update the hotel file with the latest reviews
      */
-    synchronized public void updateHotelFile(ConcurrentHashMap<Integer, List<Review>> reviewHashMap) {
-
-        if(reviewHashMap == null) {
+    public void updateHotelFile(ConcurrentHashMap<Integer, List<Review>> reviewHashMap) {
+        if (reviewHashMap == null) {
             return;
         }
+
         SearchEngine searchEngine = new SearchEngine(hotelPath);
         ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> hotels = searchEngine.getHotelsHashMap();
-    
+
         for (String city : hotels.keySet()) {
             LinkedBlockingQueue<Hotel> cityHotels = hotels.get(city);
             for (Hotel hotel : cityHotels) {
@@ -202,8 +208,7 @@ public class ReviewEngine {
                 }
             }
         }
-    
+
         searchEngine.saveHotelsHashMap(hotels, hotelPath);
     }
 }
-    

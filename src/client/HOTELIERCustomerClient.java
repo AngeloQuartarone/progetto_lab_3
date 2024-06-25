@@ -12,6 +12,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -26,6 +27,7 @@ public class HOTELIERCustomerClient {
     private String udpIp = "";
     private Socket socket = null;
     private List<String> receivedMessages = new ArrayList<>();
+    private volatile boolean running = true;
 
     /**
      * Constructor
@@ -99,38 +101,43 @@ public class HOTELIERCustomerClient {
         }
 
         try {
-            do {
-
+            while (true) {
                 received = communication.receive();
                 if (received == null) {
                     System.out.println("[RECEIVED NULL]An error occurred. Exiting...");
                     break;
                 } else {
-                    if (received.equals("LOGIN")) {
-                        startMulticastListener(udpIp, udpPort);
-                        continue;
-                    }
+                    switch (received) {
+                        case "LOGIN":
+                            startMulticastListener(udpIp, udpPort);
+                            continue;
 
-                    if (received.equals("UDP")) {
-                        printReceivedMessages();
-                        continue;
-                    }
+                        case "UDP":
+                            printReceivedMessages();
+                            continue;
 
-                    
+                        case "EXIT":
+                            running = false;
+                            break;
 
-                    if (!received.equals("PROMPT")) {
-                        
-                        System.out.println(received);
+                        case "PROMPT":
+                            System.out.print("-> ");
+                            while ((toSend = keyboardInput.readLine()) == null || toSend.trim().isEmpty()) {
+                                System.out.println("No valid input received. Please try again.");
+                            }
+                            communication.send(toSend);
+                            continue;
 
-                    } else {
-                        System.out.print("-> ");
-                        while ((toSend = keyboardInput.readLine()) == null || toSend.trim().isEmpty()) {
-                            System.out.println("No valid input received. Please try again.");
-                        }
-                        communication.send(toSend);
+                        default:
+                            System.out.println(received);
+                            break;
                     }
                 }
-            } while (!received.equals("EXIT"));
+                if (!running) {
+                    break;
+                }
+            }
+
         } catch (IOException e) {
             System.out.println(e);
 
@@ -150,7 +157,6 @@ public class HOTELIERCustomerClient {
         }
     }
 
-
     /**
      * Start the multicast listener
      * 
@@ -163,21 +169,26 @@ public class HOTELIERCustomerClient {
             MulticastSocket multicastSocket = null;
             try {
                 multicastSocket = new MulticastSocket(Integer.parseInt(udpPort));
+                multicastSocket.setSoTimeout(5);
                 InetAddress multicastGroup = InetAddress.getByName(udpIp);
                 multicastSocket.joinGroup(multicastGroup);
                 byte[] receiveBuffer = new byte[1024];
                 DatagramPacket receivePacket = new DatagramPacket(receiveBuffer, receiveBuffer.length);
-                while (true) {
-                    multicastSocket.receive(receivePacket);
-                    String received = new String(receivePacket.getData(), 0, receivePacket.getLength());
-                    if (received != null && !received.isEmpty()) {
-                        synchronized (receivedMessages) {
-                            receivedMessages.add(received);
+                while (running) {
+                    try {
+                        multicastSocket.receive(receivePacket);
+                        String received = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                        if (received != null && !received.isEmpty()) {
+                            synchronized (receivedMessages) {
+                                receivedMessages.add(received);
+                            }
                         }
+                    } catch (SocketTimeoutException e) {
+                        return;
                     }
                 }
             } catch (IOException e) {
-                System.out.println("Errore ascolto UDP multicast: " + e.getMessage());
+                System.out.println("Error in UDP multicast listening: " + e.getMessage());
             } finally {
                 if (multicastSocket != null) {
                     try {
@@ -186,13 +197,12 @@ public class HOTELIERCustomerClient {
                             multicastSocket.close();
                         }
                     } catch (IOException e) {
-                        System.out.println("Errore nella chiusura della MulticastSocket: " + e.getMessage());
+                        System.out.println("Error while closing multicastSocket: " + e.getMessage());
                     }
                 }
             }
         }).start();
     }
-
 
     /**
      * Print the received messages
