@@ -9,7 +9,6 @@ class Review {
     int position;
     int services;
     int quality;
-    int numReviews;
     String timeStamp;
 
     /**
@@ -64,13 +63,6 @@ class Review {
      */
     public int getQuality() {
         return quality;
-    }
-
-    /*
-     * Get the number of reviews
-     */
-    public int getNumReviews() {
-        return numReviews;
     }
 
     /*

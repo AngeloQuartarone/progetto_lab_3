@@ -37,7 +37,7 @@ public class SearchEngine {
      * @param cityFilter
      * @param existingHotels
      */
-    public void updateHotelListByCity(String cityFilter,
+    public void updateHotelHashByCity(String cityFilter,
             ConcurrentHashMap<String, LinkedBlockingQueue<Hotel>> existingHotels) {
         int id = 0, rate = 0, c = 0, p = 0, s = 0, q = 0, numReviews = 0;
         String name = "", description = "", city = "", phone = "";

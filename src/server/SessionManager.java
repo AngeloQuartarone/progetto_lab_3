@@ -241,7 +241,7 @@ public class SessionManager implements Runnable {
         }
 
         if (hotels == null || (hotels.containsKey(hotelCity) == false)) {
-            searchEngine.updateHotelListByCity(hotelCity, hotels);
+            searchEngine.updateHotelHashByCity(hotelCity, hotels);
         }
 
         hotelList = hotels.get(hotelCity);
@@ -279,7 +279,7 @@ public class SessionManager implements Runnable {
         }
 
         if (hotels == null || (hotels.containsKey(hotelCity) == false)) {
-            searchEngine.updateHotelListByCity(hotelCity, hotels);
+            searchEngine.updateHotelHashByCity(hotelCity, hotels);
         }
         Hotel hotel = searchEngine.searchByHotelName(hotelCity, hotelName, hotels);
         String toSend = searchEngine.formatSingleHotel(hotel);
@@ -313,7 +313,7 @@ public class SessionManager implements Runnable {
         }
         
         if (hotels == null || !hotels.containsKey(hotelCity)) {
-            searchEngine.updateHotelListByCity(hotelCity, hotels);
+            searchEngine.updateHotelHashByCity(hotelCity, hotels);
         }
         Hotel hotel = searchEngine.searchByHotelName(hotelCity, hotelName, hotels);
         
