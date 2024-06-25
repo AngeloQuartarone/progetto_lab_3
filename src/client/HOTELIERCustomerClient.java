@@ -212,7 +212,7 @@ public class HOTELIERCustomerClient {
             for (String message : receivedMessages) {
                 System.out.println(message);
             }
-            receivedMessages.clear(); // Clear the list after printing if desired
+            receivedMessages.clear();
         }
     }
 
