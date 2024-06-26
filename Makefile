@@ -1,13 +1,14 @@
 SRC = src
 LIB = lib/gson.jar
+JLIB = lib gson.jar
 BIN = bin
 
 JFLAGS = -cp
 JARFLAGS = cvfm
 JC = javac
 
-SMANIFEST = SERVER.MF
-CMANIFEST = CLIENT.MF
+SMANIFEST = Server.mf
+CMANIFEST = Client.mf
 
 
 all: server_jar client_jar
@@ -27,13 +28,13 @@ client_run:
 	java $(JFLAGS) $(BIN):$(LIB) client.ClientMain
 #Crea il file jar per il server
 server_jar:
-	jar $(JARFLAGS) Server.jar $(SMANIFEST) -C $(BIN)/ Server
+	jar $(JARFLAGS) jar/Server.jar $(SMANIFEST) -C $(BIN)/ server -C $(JLIB)
 #Crea il file jar per il client
 client_jar:
-	jar $(JARFLAGS) Client.jar $(CMANIFEST) -C $(BIN)/ Client
+	jar $(JARFLAGS) ./jar/Client.jar $(CMANIFEST) -C $(BIN)/ client -C $(JLIB)
 #Esegue il file jar per il server
 server_run_jar:
-	java -jar Server.jar
+	java -jar Server.jar 30000
 #Esegue il file jar per il client
 client_run_jar:
 	java -jar Client.jar

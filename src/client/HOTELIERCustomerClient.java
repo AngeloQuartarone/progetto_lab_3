@@ -28,6 +28,7 @@ public class HOTELIERCustomerClient {
     private Socket socket = null;
     private List<String> receivedMessages = new ArrayList<>();
     private volatile boolean running = true;
+    private MulticastSocket multicastSocket = null;
 
     /**
      * Constructor
@@ -68,6 +69,7 @@ public class HOTELIERCustomerClient {
             socket = new Socket(ipAddr, Integer.parseInt(tcpPort));
 
         } catch (IOException e) {
+            System.out.println("Socket creation error, maybe the server is not running");
             System.out.println(e);
             return;
         }
@@ -101,7 +103,7 @@ public class HOTELIERCustomerClient {
         }
 
         try {
-            while (true) {
+            while (running) {
                 received = communication.receive();
                 if (received == null) {
                     System.out.println("[RECEIVED NULL]An error occurred. Exiting...");
@@ -123,7 +125,7 @@ public class HOTELIERCustomerClient {
                         case "PROMPT":
                             System.out.print("-> ");
                             while ((toSend = keyboardInput.readLine()) == null || toSend.trim().isEmpty()) {
-                                System.out.println("No valid input received. Please try again.");
+                                System.out.println("No valid input received. Please try again.\n-> ");
                             }
                             communication.send(toSend);
                             continue;
@@ -133,15 +135,13 @@ public class HOTELIERCustomerClient {
                             break;
                     }
                 }
-                if (!running) {
-                    break;
-                }
             }
 
         } catch (IOException e) {
             System.out.println(e);
 
         } finally {
+            stopMulticastListener();
             try {
                 if (keyboardInput != null)
                     keyboardInput.close();
@@ -166,10 +166,8 @@ public class HOTELIERCustomerClient {
     @SuppressWarnings("deprecation")
     public void startMulticastListener(String udpIp, String udpPort) {
         new Thread(() -> {
-            MulticastSocket multicastSocket = null;
             try {
                 multicastSocket = new MulticastSocket(Integer.parseInt(udpPort));
-                multicastSocket.setSoTimeout(5);
                 InetAddress multicastGroup = InetAddress.getByName(udpIp);
                 multicastSocket.joinGroup(multicastGroup);
                 byte[] receiveBuffer = new byte[1024];
@@ -184,11 +182,11 @@ public class HOTELIERCustomerClient {
                             }
                         }
                     } catch (SocketTimeoutException e) {
-                        return;
+                        System.out.println(e.getMessage());
                     }
                 }
             } catch (IOException e) {
-                System.out.println("Error in UDP multicast listening: " + e.getMessage());
+                return;
             } finally {
                 if (multicastSocket != null) {
                     try {
@@ -205,6 +203,22 @@ public class HOTELIERCustomerClient {
     }
 
     /**
+     * Stop the multicast listener
+     */
+    @SuppressWarnings("deprecation")
+    public void stopMulticastListener() {
+        running = false;
+        if (multicastSocket != null) {
+            try {
+                multicastSocket.leaveGroup(InetAddress.getByName(udpIp));
+                multicastSocket.close();
+            } catch (IOException e) {
+                System.out.println("Error while closing multicastSocket: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
      * Print the received messages
      */
     public void printReceivedMessages() {
@@ -215,5 +229,4 @@ public class HOTELIERCustomerClient {
             receivedMessages.clear();
         }
     }
-
 }
