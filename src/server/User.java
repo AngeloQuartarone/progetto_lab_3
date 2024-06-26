@@ -19,7 +19,7 @@ import java.util.List;
 public class User {
     public String username;
     public String password;
-    private static final String filePath = "./Users.json";
+    private static String filePath = "./Users.json";
     private int reviewCount = 0;
 
     /**
@@ -32,7 +32,6 @@ public class User {
         this.username = username;
         this.password = password;
         this.reviewCount = loadReviewCount(username);
-
     }
 
     /**
@@ -218,15 +217,6 @@ public class User {
     }
 
     /**
-     * Get the review count
-     * 
-     * @return Review count
-     */
-    public int getReviewCount() {
-        return this.reviewCount;
-    }
-
-    /**
      * Get the badge
      * 
      * @return Badge
@@ -245,6 +235,15 @@ public class User {
         } else {
             return "Contributore Super";
         }
+    }
+    
+    /**
+     * Get the review count
+     * 
+     * @return Review count
+     */
+    public int getReviewCount() {
+        return this.reviewCount;
     }
 
     /**
