@@ -204,7 +204,6 @@ public class HOTELIERCustomerClient {
     /**
      * Stop the multicast listener
      */
-    @SuppressWarnings("deprecation")
     public void stopMulticastListener() {
         running = false;
         if (multicastSocket != null) {
