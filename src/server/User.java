@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class User {
     public String username;
-    public String password;
+    private String password;
     private static String filePath = "./Users.json";
     private int reviewCount = 0;
 

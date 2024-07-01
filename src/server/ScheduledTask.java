@@ -33,7 +33,6 @@ public class ScheduledTask implements Runnable {
     /**
      * Run the task
      */
-    @SuppressWarnings("deprecation")
     public void run() {
         try {
             reviewEngine.updateHotelFile(reviewEngine.calculateMeanRatesById());

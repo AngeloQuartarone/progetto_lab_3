@@ -163,7 +163,6 @@ public class HOTELIERCustomerClient {
      * @param udpIp   the IP address of the multicast group
      * @param udpPort the port of the multicast group
      */
-    @SuppressWarnings("deprecation")
     public void startMulticastListener(String udpIp, String udpPort) {
         new Thread(() -> {
             try {
